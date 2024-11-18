@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { toast } from 'svelte-sonner';
-	import { onMount, tick, getContext } from 'svelte';
+	import { v4 as uuidv4 } from 'uuid';
+
+	import { onMount, tick, getContext, createEventDispatcher, onDestroy } from 'svelte';
+	const dispatch = createEventDispatcher();
+
 	import {
 		type Model,
 		mobile,
@@ -10,74 +14,58 @@
 		config,
 		showCallOverlay,
 		tools,
-		user as _user
+		user as _user,
+		showControls
 	} from '$lib/stores';
-	import { blobToFile, calculateSHA256, findWordIndices } from '$lib/utils';
-
-	import {
-		processDocToVectorDB,
-		uploadDocToVectorDB,
-		uploadWebToVectorDB,
-		uploadYoutubeTranscriptionToVectorDB
-	} from '$lib/apis/rag';
-
+	import { blobToFile, findWordIndices } from '$lib/utils';
+	import { transcribeAudio } from '$lib/apis/audio';
 	import { uploadFile } from '$lib/apis/files';
-	import {
-		SUPPORTED_FILE_TYPE,
-		SUPPORTED_FILE_EXTENSIONS,
-		WEBUI_BASE_URL,
-		WEBUI_API_BASE_URL
-	} from '$lib/constants';
 
-	import Prompts from './MessageInput/PromptCommands.svelte';
-	import Suggestions from './MessageInput/Suggestions.svelte';
-	import AddFilesPlaceholder from '../AddFilesPlaceholder.svelte';
-	import Documents from './MessageInput/Documents.svelte';
-	import Models from './MessageInput/Models.svelte';
+	import { WEBUI_BASE_URL, WEBUI_API_BASE_URL } from '$lib/constants';
+
 	import Tooltip from '../common/Tooltip.svelte';
-	import XMark from '$lib/components/icons/XMark.svelte';
 	import InputMenu from './MessageInput/InputMenu.svelte';
 	import Headphone from '../icons/Headphone.svelte';
 	import VoiceRecording from './MessageInput/VoiceRecording.svelte';
-	import { transcribeAudio } from '$lib/apis/audio';
 	import FileItem from '../common/FileItem.svelte';
 	import FilesOverlay from './MessageInput/FilesOverlay.svelte';
+	import Commands from './MessageInput/Commands.svelte';
+	import XMark from '../icons/XMark.svelte';
+	import RichTextInput from '../common/RichTextInput.svelte';
 
 	const i18n = getContext('i18n');
 
 	export let transparentBackground = false;
 
-	export let submitPrompt: Function;
+	export let createMessagePair: Function;
 	export let stopResponse: Function;
 
-	export let autoScroll = true;
+	export let autoScroll = false;
 
 	export let atSelectedModel: Model | undefined;
 	export let selectedModels: [''];
 
+	export let history;
+
+	export let prompt = '';
+	export let files = [];
+	export let availableToolIds = [];
+	export let selectedToolIds = [];
+	export let webSearchEnabled = false;
+
 	let recording = false;
 
-	let chatTextAreaElement: HTMLTextAreaElement;
-	let filesInputElement;
+	let chatInputContainerElement;
+	let chatInputElement;
 
-	let promptsElement;
-	let documentsElement;
-	let modelsElement;
+	let filesInputElement;
+	let commandsElement;
 
 	let inputFiles;
 	let dragged = false;
 
 	let user = null;
-	let chatInputPlaceholder = '';
-
-	export let files = [];
-
-	export let availableToolIds = [];
-	export let selectedToolIds = [];
-	export let webSearchEnabled = false;
-
-	export let prompt = '';
-	export let messages = [];
+	export let placeholder = '';
 
 	let visionCapableModels = [];
 	$: visionCapableModels = [...(atSelectedModel ? [atSelectedModel] : selectedModels)].filter(
@@ -85,22 +73,46 @@
 	);
 
 	$: if (prompt) {
-		if (chatTextAreaElement) {
-			chatTextAreaElement.style.height = '';
-			chatTextAreaElement.style.height = Math.min(chatTextAreaElement.scrollHeight, 200) + 'px';
+		if (chatInputContainerElement) {
+			chatInputContainerElement.style.height = '';
+			chatInputContainerElement.style.height =
+				Math.min(chatInputContainerElement.scrollHeight, 200) + 'px';
 		}
 	}
 
 	const scrollToBottom = () => {
 		const element = document.getElementById('messages-container');
-		element.scrollTop = element.scrollHeight;
+		element.scrollTo({
+			top: element.scrollHeight,
+			behavior: 'smooth'
+		});
 	};
 
 	const uploadFileHandler = async (file) => {
 		console.log(file);
 
+		const tempItemId = uuidv4();
+		const fileItem = {
+			type: 'file',
+			file: '',
+			id: null,
+			url: '',
+			name: file.name,
+			collection_name: '',
+			status: 'uploading',
+			size: file.size,
+			error: '',
+			itemId: tempItemId
+		};
+
+		if (fileItem.size == 0) {
+			toast.error($i18n.t('You cannot upload an empty file.'));
+			return null;
+		}
+
+		files = [...files, fileItem];
 		// Check if the file is an audio file and transcribe/convert it to text file
-		if (['audio/mpeg', 'audio/wav'].includes(file['type'])) {
+		if (['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/x-m4a'].includes(file['type'])) {
 			const res = await transcribeAudio(localStorage.token, file).catch((error) => {
 				toast.error(error);
 				return null;
@@ -110,201 +122,135 @@
 				console.log(res);
 				const blob = new Blob([res.text], { type: 'text/plain' });
 				file = blobToFile(blob, `${file.name}.txt`);
+
+				fileItem.name = file.name;
+				fileItem.size = file.size;
 			}
 		}
 
-		const fileItem = {
-			type: 'file',
-			file: '',
-			id: null,
-			url: '',
-			name: file.name,
-			collection_name: '',
-			status: '',
-			size: file.size,
-			error: ''
-		};
-		files = [...files, fileItem];
-
 		try {
+			// During the file upload, file content is automatically extracted.
 			const uploadedFile = await uploadFile(localStorage.token, file);
 
 			if (uploadedFile) {
+				if (uploadedFile.error) {
+					toast.warning(uploadedFile.error);
+				}
+
 				fileItem.status = 'uploaded';
 				fileItem.file = uploadedFile;
 				fileItem.id = uploadedFile.id;
+				fileItem.collection_name = uploadedFile?.meta?.collection_name;
 				fileItem.url = `${WEBUI_API_BASE_URL}/files/${uploadedFile.id}`;
 
-				// TODO: Check if tools & functions have files support to skip this step to delegate file processing
-				// Default Upload to VectorDB
-				if (
-					SUPPORTED_FILE_TYPE.includes(file['type']) ||
-					SUPPORTED_FILE_EXTENSIONS.includes(file.name.split('.').at(-1))
-				) {
-					processFileItem(fileItem);
-				} else {
-					toast.error(
-						$i18n.t(`Unknown file type '{{file_type}}'. Proceeding with the file upload anyway.`, {
-							file_type: file['type']
-						})
-					);
-					processFileItem(fileItem);
-				}
+				files = files;
 			} else {
-				files = files.filter((item) => item.status !== null);
+				files = files.filter((item) => item?.itemId !== tempItemId);
 			}
 		} catch (e) {
 			toast.error(e);
-			files = files.filter((item) => item.status !== null);
+			files = files.filter((item) => item?.itemId !== tempItemId);
 		}
 	};
 
-	const processFileItem = async (fileItem) => {
-		try {
-			const res = await processDocToVectorDB(localStorage.token, fileItem.id);
+	const inputFilesHandler = async (inputFiles) => {
+		inputFiles.forEach((file) => {
+			console.log(file, file.name.split('.').at(-1));
 
-			if (res) {
-				fileItem.status = 'processed';
-				fileItem.collection_name = res.collection_name;
-				files = files;
+			if (
+				($config?.file?.max_size ?? null) !== null &&
+				file.size > ($config?.file?.max_size ?? 0) * 1024 * 1024
+			) {
+				toast.error(
+					$i18n.t(`File size should not exceed {{maxSize}} MB.`, {
+						maxSize: $config?.file?.max_size
+					})
+				);
+				return;
 			}
-		} catch (e) {
-			// Remove the failed doc from the files array
-			// files = files.filter((f) => f.id !== fileItem.id);
-			toast.error(e);
-			fileItem.status = 'processed';
-			files = files;
+
+			if (['image/gif', 'image/webp', 'image/jpeg', 'image/png'].includes(file['type'])) {
+				if (visionCapableModels.length === 0) {
+					toast.error($i18n.t('Selected model(s) do not support image inputs'));
+					return;
+				}
+				let reader = new FileReader();
+				reader.onload = (event) => {
+					files = [
+						...files,
+						{
+							type: 'image',
+							url: `${event.target.result}`
+						}
+					];
+				};
+				reader.readAsDataURL(file);
+			} else {
+				uploadFileHandler(file);
+			}
+		});
+	};
+
+	const handleKeyDown = (event: KeyboardEvent) => {
+		if (event.key === 'Escape') {
+			console.log('Escape');
+			dragged = false;
 		}
 	};
 
-	const uploadWeb = async (url) => {
-		console.log(url);
+	const onDragOver = (e) => {
+		e.preventDefault();
 
-		const doc = {
-			type: 'doc',
-			name: url,
-			collection_name: '',
-			status: false,
-			url: url,
-			error: ''
-		};
-
-		try {
-			files = [...files, doc];
-			const res = await uploadWebToVectorDB(localStorage.token, '', url);
-
-			if (res) {
-				doc.status = 'processed';
-				doc.collection_name = res.collection_name;
-				files = files;
-			}
-		} catch (e) {
-			// Remove the failed doc from the files array
-			files = files.filter((f) => f.name !== url);
-			toast.error(e);
+		// Check if a file is being dragged.
+		if (e.dataTransfer?.types?.includes('Files')) {
+			dragged = true;
+		} else {
+			dragged = false;
 		}
 	};
 
-	const uploadYoutubeTranscription = async (url) => {
-		console.log(url);
+	const onDragLeave = () => {
+		dragged = false;
+	};
 
-		const doc = {
-			type: 'doc',
-			name: url,
-			collection_name: '',
-			status: false,
-			url: url,
-			error: ''
-		};
+	const onDrop = async (e) => {
+		e.preventDefault();
+		console.log(e);
 
-		try {
-			files = [...files, doc];
-			const res = await uploadYoutubeTranscriptionToVectorDB(localStorage.token, url);
-
-			if (res) {
-				doc.status = 'processed';
-				doc.collection_name = res.collection_name;
-				files = files;
+		if (e.dataTransfer?.files) {
+			const inputFiles = Array.from(e.dataTransfer?.files);
+			if (inputFiles && inputFiles.length > 0) {
+				console.log(inputFiles);
+				inputFilesHandler(inputFiles);
 			}
-		} catch (e) {
-			// Remove the failed doc from the files array
-			files = files.filter((f) => f.name !== url);
-			toast.error(e);
 		}
+
+		dragged = false;
 	};
 
 	onMount(() => {
-		window.setTimeout(() => chatTextAreaElement?.focus(), 0);
-
-		const dropZone = document.querySelector('body');
-
-		const handleKeyDown = (event: KeyboardEvent) => {
-			if (event.key === 'Escape') {
-				console.log('Escape');
-				dragged = false;
-			}
-		};
-
-		const onDragOver = (e) => {
-			e.preventDefault();
-			dragged = true;
-		};
-
-		const onDragLeave = () => {
-			dragged = false;
-		};
-
-		const onDrop = async (e) => {
-			e.preventDefault();
-			console.log(e);
-
-			if (e.dataTransfer?.files) {
-				const inputFiles = Array.from(e.dataTransfer?.files);
-
-				if (inputFiles && inputFiles.length > 0) {
-					inputFiles.forEach((file) => {
-						console.log(file, file.name.split('.').at(-1));
-						if (['image/gif', 'image/webp', 'image/jpeg', 'image/png'].includes(file['type'])) {
-							if (visionCapableModels.length === 0) {
-								toast.error($i18n.t('Selected model(s) do not support image inputs'));
-								return;
-							}
-							let reader = new FileReader();
-							reader.onload = (event) => {
-								files = [
-									...files,
-									{
-										type: 'image',
-										url: `${event.target.result}`
-									}
-								];
-							};
-							reader.readAsDataURL(file);
-						} else {
-							uploadFileHandler(file);
-						}
-					});
-				} else {
-					toast.error($i18n.t(`File not found.`));
-				}
-			}
-
-			dragged = false;
-		};
+		window.setTimeout(() => {
+			const chatInput = document.getElementById('chat-input');
+			chatInput?.focus();
+		}, 0);
 
 		window.addEventListener('keydown', handleKeyDown);
+
+		const dropZone = document.getElementById('chat-container');
 
 		dropZone?.addEventListener('dragover', onDragOver);
 		dropZone?.addEventListener('drop', onDrop);
 		dropZone?.addEventListener('dragleave', onDragLeave);
+	});
 
-		return () => {
-			window.removeEventListener('keydown', handleKeyDown);
+	onDestroy(() => {
+		window.removeEventListener('keydown', handleKeyDown);
 
-			dropZone?.removeEventListener('dragover', onDragOver);
-			dropZone?.removeEventListener('drop', onDrop);
-			dropZone?.removeEventListener('dragleave', onDragLeave);
-		};
+		const dropZone = document.getElementById('chat-container');
+
+		dropZone?.removeEventListener('dragover', onDragOver);
+		dropZone?.removeEventListener('drop', onDrop);
+		dropZone?.removeEventListener('dragleave', onDragLeave);
 	});
 </script>
 
@@ -312,9 +258,9 @@
 
 <div class="w-full font-primary">
 	<div class=" -mb-0.5 mx-auto inset-x-0 bg-transparent flex justify-center">
-		<div class="flex flex-col max-w-6xl px-2.5 md:px-6 w-full">
+		<div class="flex flex-col px-2.5 max-w-6xl w-full">
 			<div class="relative">
-				{#if autoScroll === false && messages.length > 0}
+				{#if autoScroll === false && history?.currentId}
 					<div
 						class=" absolute -top-12 left-0 right-0 flex justify-center z-30 pointer-events-none"
 					>
@@ -343,54 +289,15 @@
 			</div>
 
 			<div class="w-full relative">
-				{#if prompt.charAt(0) === '/'}
-					<Prompts bind:this={promptsElement} bind:prompt bind:files />
-				{:else if prompt.charAt(0) === '#'}
-					<Documents
-						bind:this={documentsElement}
-						bind:prompt
-						on:youtube={(e) => {
-							console.log(e);
-							uploadYoutubeTranscription(e.detail);
-						}}
-						on:url={(e) => {
-							console.log(e);
-							uploadWeb(e.detail);
-						}}
-						on:select={(e) => {
-							console.log(e);
-							files = [
-								...files,
-								{
-									type: e?.detail?.type ?? 'file',
-									...e.detail,
-									status: 'processed'
-								}
-							];
-						}}
-					/>
-				{/if}
-
-				<Models
-					bind:this={modelsElement}
-					bind:prompt
-					bind:chatInputPlaceholder
-					{messages}
-					on:select={(e) => {
-						atSelectedModel = e.detail;
-						chatTextAreaElement?.focus();
-					}}
-				/>
-
 				{#if atSelectedModel !== undefined}
 					<div
-						class="px-3 py-2.5 text-left w-full flex justify-between items-center absolute bottom-0 left-0 right-0 bg-gradient-to-t from-50% from-white dark:from-gray-900 z-50"
+						class="px-3 py-1 text-left w-full flex justify-between items-center absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white dark:from-gray-900 z-10"
 					>
 						<div class="flex items-center gap-2 text-sm dark:text-gray-500">
 							<img
 								crossorigin="anonymous"
 								alt="model profile"
-								class="size-5 max-w-[28px] object-cover rounded-full"
+								class="size-4 max-w-[28px] object-cover rounded-full"
 								src={$models.find((model) => model.id === atSelectedModel.id)?.info?.meta
 									?.profile_image_url ??
 									($i18n.language === 'dg-DG'
@@ -413,13 +320,32 @@
 						</div>
 					</div>
 				{/if}
+
+				<Commands
+					bind:this={commandsElement}
+					bind:prompt
+					bind:files
+					on:upload={(e) => {
+						dispatch('upload', e.detail);
+					}}
+					on:select={(e) => {
+						const data = e.detail;
+
+						if (data?.type === 'model') {
+							atSelectedModel = data.data;
+						}
+
+						const chatInputElement = document.getElementById('chat-input');
+						chatInputElement?.focus();
+					}}
+				/>
 			</div>
 		</div>
 	</div>
 
 	<div class="{transparentBackground ? 'bg-transparent' : 'bg-white dark:bg-gray-900'} ">
-		<div class="max-w-6xl px-2.5 md:px-6 mx-auto inset-x-0">
-			<div class=" pb-2">
+		<div class="max-w-6xl px-4 mx-auto inset-x-0">
+			<div class="">
 				<input
 					bind:this={filesInputElement}
 					bind:files={inputFiles}
@@ -429,27 +355,7 @@
 					on:change={async () => {
 						if (inputFiles && inputFiles.length > 0) {
 							const _inputFiles = Array.from(inputFiles);
-							_inputFiles.forEach((file) => {
-								if (['image/gif', 'image/webp', 'image/jpeg', 'image/png'].includes(file['type'])) {
-									if (visionCapableModels.length === 0) {
-										toast.error($i18n.t('Selected model(s) do not support image inputs'));
-										return;
-									}
-									let reader = new FileReader();
-									reader.onload = (event) => {
-										files = [
-											...files,
-											{
-												type: 'image',
-												url: `${event.target.result}`
-											}
-										];
-									};
-									reader.readAsDataURL(file);
-								} else {
-									uploadFileHandler(file);
-								}
-							});
+							inputFilesHandler(_inputFiles);
 						} else {
 							toast.error($i18n.t(`File not found.`));
 						}
@@ -465,19 +371,19 @@
 							recording = false;
 
 							await tick();
-							document.getElementById('chat-textarea')?.focus();
+							document.getElementById('chat-input')?.focus();
 						}}
 						on:confirm={async (e) => {
-							const response = e.detail;
-							prompt = `${prompt}${response} `;
+							const { text, filename } = e.detail;
+							prompt = `${prompt}${text} `;
 
 							recording = false;
 
 							await tick();
-							document.getElementById('chat-textarea')?.focus();
+							document.getElementById('chat-input')?.focus();
 
 							if ($settings?.speechAutoSend ?? false) {
-								submitPrompt(prompt);
+								dispatch('submit', prompt);
 							}
 						}}
 					/>
@@ -486,7 +392,7 @@
 						class="w-full flex gap-1.5"
 						on:submit|preventDefault={() => {
 							// check if selectedModels support image input
-							submitPrompt(prompt);
+							dispatch('submit', prompt);
 						}}
 					>
 						<div
@@ -552,14 +458,19 @@
 											</div>
 										{:else}
 											<FileItem
+												item={file}
 												name={file.name}
 												type={file.type}
 												size={file?.size}
-												status={file.status}
+												loading={file.status === 'uploading'}
 												dismissible={true}
+												edit={true}
 												on:dismiss={() => {
 													files.splice(fileIdx, 1);
 													files = files;
+												}}
+												on:click={() => {
+													console.log(file);
 												}}
 											/>
 										{/if}
@@ -587,12 +498,15 @@
 										}}
 										onClose={async () => {
 											await tick();
-											chatTextAreaElement?.focus();
+
+											const chatInput = document.getElementById('chat-input');
+											chatInput?.focus();
 										}}
 									>
 										<button
 											class="bg-gray-50 hover:bg-gray-100 text-gray-800 dark:bg-gray-850 dark:text-white dark:hover:bg-gray-800 transition rounded-full p-2 outline-none focus:outline-none"
 											type="button"
+											aria-label="More"
 										>
 											<svg
 												xmlns="http://www.w3.org/2000/svg"
@@ -608,177 +522,351 @@
 									</InputMenu>
 								</div>
 
-								<textarea
-									id="chat-textarea"
-									bind:this={chatTextAreaElement}
-									class="scrollbar-hidden bg-gray-50 dark:bg-gray-850 dark:text-gray-100 outline-none w-full py-3 px-1 rounded-xl resize-none h-[48px]"
-									placeholder={chatInputPlaceholder !== ''
-										? chatInputPlaceholder
-										: $i18n.t('Send a Message')}
-									bind:value={prompt}
-									on:keypress={(e) => {
-										if (
-											!$mobile ||
-											!(
-												'ontouchstart' in window ||
-												navigator.maxTouchPoints > 0 ||
-												navigator.msMaxTouchPoints > 0
-											)
-										) {
-											// Prevent Enter key from creating a new line
-											if (e.key === 'Enter' && !e.shiftKey) {
-												e.preventDefault();
-											}
+								{#if $settings?.richTextInput ?? true}
+									<div
+										bind:this={chatInputContainerElement}
+										id="chat-input-container"
+										class="scrollbar-hidden text-left bg-gray-50 dark:bg-gray-850 dark:text-gray-100 outline-none w-full py-2.5 px-1 rounded-xl resize-none h-[48px] overflow-auto"
+									>
+										<RichTextInput
+											bind:this={chatInputElement}
+											id="chat-input"
+											trim={true}
+											placeholder={placeholder ? placeholder : $i18n.t('Send a Message')}
+											bind:value={prompt}
+											shiftEnter={!$mobile ||
+												!(
+													'ontouchstart' in window ||
+													navigator.maxTouchPoints > 0 ||
+													navigator.msMaxTouchPoints > 0
+												)}
+											on:enter={async (e) => {
+												if (prompt !== '') {
+													dispatch('submit', prompt);
+												}
+											}}
+											on:input={async (e) => {
+												if (chatInputContainerElement) {
+													chatInputContainerElement.style.height = '';
+													chatInputContainerElement.style.height =
+														Math.min(chatInputContainerElement.scrollHeight, 200) + 'px';
+												}
+											}}
+											on:focus={async (e) => {
+												if (chatInputContainerElement) {
+													chatInputContainerElement.style.height = '';
+													chatInputContainerElement.style.height =
+														Math.min(chatInputContainerElement.scrollHeight, 200) + 'px';
+												}
+											}}
+											on:keypress={(e) => {
+												e = e.detail.event;
+											}}
+											on:keydown={async (e) => {
+												e = e.detail.event;
 
-											// Submit the prompt when Enter key is pressed
-											if (prompt !== '' && e.key === 'Enter' && !e.shiftKey) {
-												submitPrompt(prompt);
-											}
-										}
-									}}
-									on:keydown={async (e) => {
-										const isCtrlPressed = e.ctrlKey || e.metaKey; // metaKey is for Cmd key on Mac
+												if (chatInputContainerElement) {
+													chatInputContainerElement.style.height = '';
+													chatInputContainerElement.style.height =
+														Math.min(chatInputContainerElement.scrollHeight, 200) + 'px';
+												}
 
-										// Check if Ctrl + R is pressed
-										if (prompt === '' && isCtrlPressed && e.key.toLowerCase() === 'r') {
-											e.preventDefault();
-											console.log('regenerate');
+												const isCtrlPressed = e.ctrlKey || e.metaKey; // metaKey is for Cmd key on Mac
+												const commandsContainerElement =
+													document.getElementById('commands-container');
 
-											const regenerateButton = [
-												...document.getElementsByClassName('regenerate-response-button')
-											]?.at(-1);
+												// Command/Ctrl + Shift + Enter to submit a message pair
+												if (isCtrlPressed && e.key === 'Enter' && e.shiftKey) {
+													e.preventDefault();
+													createMessagePair(prompt);
+												}
 
-											regenerateButton?.click();
-										}
+												// Check if Ctrl + R is pressed
+												if (prompt === '' && isCtrlPressed && e.key.toLowerCase() === 'r') {
+													e.preventDefault();
+													console.log('regenerate');
 
-										if (prompt === '' && e.key == 'ArrowUp') {
-											e.preventDefault();
+													const regenerateButton = [
+														...document.getElementsByClassName('regenerate-response-button')
+													]?.at(-1);
 
-											const userMessageElement = [
-												...document.getElementsByClassName('user-message')
-											]?.at(-1);
+													regenerateButton?.click();
+												}
 
-											const editButton = [
-												...document.getElementsByClassName('edit-user-message-button')
-											]?.at(-1);
+												if (prompt === '' && e.key == 'ArrowUp') {
+													e.preventDefault();
 
-											console.log(userMessageElement);
+													const userMessageElement = [
+														...document.getElementsByClassName('user-message')
+													]?.at(-1);
 
-											userMessageElement.scrollIntoView({ block: 'center' });
-											editButton?.click();
-										}
+													const editButton = [
+														...document.getElementsByClassName('edit-user-message-button')
+													]?.at(-1);
 
-										if (['/', '#', '@'].includes(prompt.charAt(0)) && e.key === 'ArrowUp') {
-											e.preventDefault();
+													console.log(userMessageElement);
 
-											(promptsElement || documentsElement || modelsElement).selectUp();
+													userMessageElement.scrollIntoView({ block: 'center' });
+													editButton?.click();
+												}
 
-											const commandOptionButton = [
-												...document.getElementsByClassName('selected-command-option-button')
-											]?.at(-1);
-											commandOptionButton.scrollIntoView({ block: 'center' });
-										}
+												if (commandsContainerElement && e.key === 'ArrowUp') {
+													e.preventDefault();
+													commandsElement.selectUp();
 
-										if (['/', '#', '@'].includes(prompt.charAt(0)) && e.key === 'ArrowDown') {
-											e.preventDefault();
+													const commandOptionButton = [
+														...document.getElementsByClassName('selected-command-option-button')
+													]?.at(-1);
+													commandOptionButton.scrollIntoView({ block: 'center' });
+												}
 
-											(promptsElement || documentsElement || modelsElement).selectDown();
+												if (commandsContainerElement && e.key === 'ArrowDown') {
+													e.preventDefault();
+													commandsElement.selectDown();
 
-											const commandOptionButton = [
-												...document.getElementsByClassName('selected-command-option-button')
-											]?.at(-1);
-											commandOptionButton.scrollIntoView({ block: 'center' });
-										}
+													const commandOptionButton = [
+														...document.getElementsByClassName('selected-command-option-button')
+													]?.at(-1);
+													commandOptionButton.scrollIntoView({ block: 'center' });
+												}
 
-										if (['/', '#', '@'].includes(prompt.charAt(0)) && e.key === 'Enter') {
-											e.preventDefault();
+												if (commandsContainerElement && e.key === 'Enter') {
+													e.preventDefault();
 
-											const commandOptionButton = [
-												...document.getElementsByClassName('selected-command-option-button')
-											]?.at(-1);
+													const commandOptionButton = [
+														...document.getElementsByClassName('selected-command-option-button')
+													]?.at(-1);
 
-											if (e.shiftKey) {
-												prompt = `${prompt}\n`;
-											} else if (commandOptionButton) {
-												commandOptionButton?.click();
-											} else {
-												document.getElementById('send-message-button')?.click();
-											}
-										}
+													if (e.shiftKey) {
+														prompt = `${prompt}\n`;
+													} else if (commandOptionButton) {
+														commandOptionButton?.click();
+													} else {
+														document.getElementById('send-message-button')?.click();
+													}
+												}
 
-										if (['/', '#', '@'].includes(prompt.charAt(0)) && e.key === 'Tab') {
-											e.preventDefault();
+												if (commandsContainerElement && e.key === 'Tab') {
+													e.preventDefault();
 
-											const commandOptionButton = [
-												...document.getElementsByClassName('selected-command-option-button')
-											]?.at(-1);
+													const commandOptionButton = [
+														...document.getElementsByClassName('selected-command-option-button')
+													]?.at(-1);
 
-											commandOptionButton?.click();
-										} else if (e.key === 'Tab') {
-											const words = findWordIndices(prompt);
+													commandOptionButton?.click();
+												}
 
-											if (words.length > 0) {
-												const word = words.at(0);
-												const fullPrompt = prompt;
+												if (e.key === 'Escape') {
+													console.log('Escape');
+													atSelectedModel = undefined;
+												}
+											}}
+											on:paste={async (e) => {
+												e = e.detail.event;
+												console.log(e);
 
-												prompt = prompt.substring(0, word?.endIndex + 1);
-												await tick();
+												const clipboardData = e.clipboardData || window.clipboardData;
 
-												e.target.scrollTop = e.target.scrollHeight;
-												prompt = fullPrompt;
-												await tick();
+												if (clipboardData && clipboardData.items) {
+													for (const item of clipboardData.items) {
+														if (item.type.indexOf('image') !== -1) {
+															const blob = item.getAsFile();
+															const reader = new FileReader();
 
-												e.preventDefault();
-												e.target.setSelectionRange(word?.startIndex, word.endIndex + 1);
-											}
+															reader.onload = function (e) {
+																files = [
+																	...files,
+																	{
+																		type: 'image',
+																		url: `${e.target.result}`
+																	}
+																];
+															};
 
-											e.target.style.height = '';
-											e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
-										}
+															reader.readAsDataURL(blob);
+														}
+													}
+												}
+											}}
+										/>
+									</div>
+								{:else}
+									<textarea
+										id="chat-input"
+										bind:this={chatInputElement}
+										class="scrollbar-hidden bg-gray-50 dark:bg-gray-850 dark:text-gray-100 outline-none w-full py-3 px-1 rounded-xl resize-none h-[48px]"
+										placeholder={placeholder ? placeholder : $i18n.t('Send a Message')}
+										bind:value={prompt}
+										on:keypress={(e) => {
+											if (
+												!$mobile ||
+												!(
+													'ontouchstart' in window ||
+													navigator.maxTouchPoints > 0 ||
+													navigator.msMaxTouchPoints > 0
+												)
+											) {
+												// Prevent Enter key from creating a new line
+												if (e.key === 'Enter' && !e.shiftKey) {
+													e.preventDefault();
+												}
 
-										if (e.key === 'Escape') {
-											console.log('Escape');
-											atSelectedModel = undefined;
-										}
-									}}
-									rows="1"
-									on:input={(e) => {
-										e.target.style.height = '';
-										e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
-										user = null;
-									}}
-									on:focus={(e) => {
-										e.target.style.height = '';
-										e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
-									}}
-									on:paste={(e) => {
-										const clipboardData = e.clipboardData || window.clipboardData;
-
-										if (clipboardData && clipboardData.items) {
-											for (const item of clipboardData.items) {
-												if (item.type.indexOf('image') !== -1) {
-													const blob = item.getAsFile();
-													const reader = new FileReader();
-
-													reader.onload = function (e) {
-														files = [
-															...files,
-															{
-																type: 'image',
-																url: `${e.target.result}`
-															}
-														];
-													};
-
-													reader.readAsDataURL(blob);
+												// Submit the prompt when Enter key is pressed
+												if (prompt !== '' && e.key === 'Enter' && !e.shiftKey) {
+													dispatch('submit', prompt);
 												}
 											}
-										}
-									}}
-								/>
+										}}
+										on:keydown={async (e) => {
+											const isCtrlPressed = e.ctrlKey || e.metaKey; // metaKey is for Cmd key on Mac
+											const commandsContainerElement =
+												document.getElementById('commands-container');
+
+											// Command/Ctrl + Shift + Enter to submit a message pair
+											if (isCtrlPressed && e.key === 'Enter' && e.shiftKey) {
+												e.preventDefault();
+												createMessagePair(prompt);
+											}
+
+											// Check if Ctrl + R is pressed
+											if (prompt === '' && isCtrlPressed && e.key.toLowerCase() === 'r') {
+												e.preventDefault();
+												console.log('regenerate');
+
+												const regenerateButton = [
+													...document.getElementsByClassName('regenerate-response-button')
+												]?.at(-1);
+
+												regenerateButton?.click();
+											}
+
+											if (prompt === '' && e.key == 'ArrowUp') {
+												e.preventDefault();
+
+												const userMessageElement = [
+													...document.getElementsByClassName('user-message')
+												]?.at(-1);
+
+												const editButton = [
+													...document.getElementsByClassName('edit-user-message-button')
+												]?.at(-1);
+
+												console.log(userMessageElement);
+
+												userMessageElement.scrollIntoView({ block: 'center' });
+												editButton?.click();
+											}
+
+											if (commandsContainerElement && e.key === 'ArrowUp') {
+												e.preventDefault();
+												commandsElement.selectUp();
+
+												const commandOptionButton = [
+													...document.getElementsByClassName('selected-command-option-button')
+												]?.at(-1);
+												commandOptionButton.scrollIntoView({ block: 'center' });
+											}
+
+											if (commandsContainerElement && e.key === 'ArrowDown') {
+												e.preventDefault();
+												commandsElement.selectDown();
+
+												const commandOptionButton = [
+													...document.getElementsByClassName('selected-command-option-button')
+												]?.at(-1);
+												commandOptionButton.scrollIntoView({ block: 'center' });
+											}
+
+											if (commandsContainerElement && e.key === 'Enter') {
+												e.preventDefault();
+
+												const commandOptionButton = [
+													...document.getElementsByClassName('selected-command-option-button')
+												]?.at(-1);
+
+												if (e.shiftKey) {
+													prompt = `${prompt}\n`;
+												} else if (commandOptionButton) {
+													commandOptionButton?.click();
+												} else {
+													document.getElementById('send-message-button')?.click();
+												}
+											}
+
+											if (commandsContainerElement && e.key === 'Tab') {
+												e.preventDefault();
+
+												const commandOptionButton = [
+													...document.getElementsByClassName('selected-command-option-button')
+												]?.at(-1);
+
+												commandOptionButton?.click();
+											} else if (e.key === 'Tab') {
+												const words = findWordIndices(prompt);
+
+												if (words.length > 0) {
+													const word = words.at(0);
+													const fullPrompt = prompt;
+
+													prompt = prompt.substring(0, word?.endIndex + 1);
+													await tick();
+
+													e.target.scrollTop = e.target.scrollHeight;
+													prompt = fullPrompt;
+													await tick();
+
+													e.preventDefault();
+													e.target.setSelectionRange(word?.startIndex, word.endIndex + 1);
+												}
+
+												e.target.style.height = '';
+												e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
+											}
+
+											if (e.key === 'Escape') {
+												console.log('Escape');
+												atSelectedModel = undefined;
+											}
+										}}
+										rows="1"
+										on:input={async (e) => {
+											e.target.style.height = '';
+											e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
+											user = null;
+										}}
+										on:focus={async (e) => {
+											e.target.style.height = '';
+											e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
+										}}
+										on:paste={async (e) => {
+											const clipboardData = e.clipboardData || window.clipboardData;
+
+											if (clipboardData && clipboardData.items) {
+												for (const item of clipboardData.items) {
+													if (item.type.indexOf('image') !== -1) {
+														const blob = item.getAsFile();
+														const reader = new FileReader();
+
+														reader.onload = function (e) {
+															files = [
+																...files,
+																{
+																	type: 'image',
+																	url: `${e.target.result}`
+																}
+															];
+														};
+
+														reader.readAsDataURL(blob);
+													}
+												}
+											}
+										}}
+									/>
+								{/if}
 
 								<div class="self-end mb-2 flex space-x-1 mr-1">
-									{#if messages.length == 0 || messages.at(-1).done == true}
+									{#if !history?.currentId || history.messages[history.currentId]?.done == true}
 										<Tooltip content={$i18n.t('Record voice')}>
 											<button
 												id="voice-input-button"
@@ -786,7 +874,7 @@
 												type="button"
 												on:click={async () => {
 													try {
-														const res = await navigator.mediaDevices
+														let stream = await navigator.mediaDevices
 															.getUserMedia({ audio: true })
 															.catch(function (err) {
 																toast.error(
@@ -800,13 +888,17 @@
 																return null;
 															});
 
-														if (res) {
+														if (stream) {
 															recording = true;
+															const tracks = stream.getTracks();
+															tracks.forEach((track) => track.stop());
 														}
+														stream = null;
 													} catch {
 														toast.error($i18n.t('Permission denied when accessing microphone'));
 													}
 												}}
+												aria-label="Voice Input"
 											>
 												<svg
 													xmlns="http://www.w3.org/2000/svg"
@@ -826,7 +918,7 @@
 							</div>
 						</div>
 						<div class="flex items-end w-10">
-							{#if messages.length == 0 || messages.at(-1).done == true}
+							{#if !history.currentId || history.messages[history.currentId]?.done == true}
 								{#if prompt === ''}
 									<div class=" flex items-center mb-1">
 										<Tooltip content={$i18n.t('Call')}>
@@ -849,15 +941,24 @@
 													}
 													// check if user has access to getUserMedia
 													try {
-														await navigator.mediaDevices.getUserMedia({ audio: true });
+														let stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 														// If the user grants the permission, proceed to show the call overlay
 
+														if (stream) {
+															const tracks = stream.getTracks();
+															tracks.forEach((track) => track.stop());
+														}
+
+														stream = null;
+
 														showCallOverlay.set(true);
+														showControls.set(true);
 													} catch (err) {
 														// If the user denies the permission or an error occurs, show an error message
 														toast.error($i18n.t('Permission denied when accessing media devices'));
 													}
 												}}
+												aria-label="Call"
 											>
 												<Headphone className="size-6" />
 											</button>
@@ -892,46 +993,33 @@
 								{/if}
 							{:else}
 								<div class=" flex items-center mb-1.5">
-									<button
-										class="bg-white hover:bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-800 transition rounded-full p-1.5"
-										on:click={() => {
-											stopResponse();
-										}}
-									>
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											viewBox="0 0 24 24"
-											fill="currentColor"
-											class="size-6"
+									<Tooltip content={$i18n.t('Stop')}>
+										<button
+											class="bg-white hover:bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-800 transition rounded-full p-1.5"
+											on:click={() => {
+												stopResponse();
+											}}
 										>
-											<path
-												fill-rule="evenodd"
-												d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm6-2.438c0-.724.588-1.312 1.313-1.312h4.874c.725 0 1.313.588 1.313 1.313v4.874c0 .725-.588 1.313-1.313 1.313H9.564a1.312 1.312 0 01-1.313-1.313V9.564z"
-												clip-rule="evenodd"
-											/>
-										</svg>
-									</button>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												viewBox="0 0 24 24"
+												fill="currentColor"
+												class="size-6"
+											>
+												<path
+													fill-rule="evenodd"
+													d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm6-2.438c0-.724.588-1.312 1.313-1.312h4.874c.725 0 1.313.588 1.313 1.313v4.874c0 .725-.588 1.313-1.313 1.313H9.564a1.312 1.312 0 01-1.313-1.313V9.564z"
+													clip-rule="evenodd"
+												/>
+											</svg>
+										</button>
+									</Tooltip>
 								</div>
 							{/if}
 						</div>
 					</form>
 				{/if}
-
-				<div class="mt-1.5 text-xs text-gray-500 text-center line-clamp-1">
-					{$i18n.t('LLMs can make mistakes. Verify important information.')}
-				</div>
 			</div>
 		</div>
 	</div>
 </div>
-
-<style>
-	.scrollbar-hidden:active::-webkit-scrollbar-thumb,
-	.scrollbar-hidden:focus::-webkit-scrollbar-thumb,
-	.scrollbar-hidden:hover::-webkit-scrollbar-thumb {
-		visibility: visible;
-	}
-	.scrollbar-hidden::-webkit-scrollbar-thumb {
-		visibility: hidden;
-	}
-</style>

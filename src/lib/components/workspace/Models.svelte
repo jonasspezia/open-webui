@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { marked } from 'marked';
+
 	import { toast } from 'svelte-sonner';
 	import Sortable from 'sortablejs';
 
@@ -7,7 +9,7 @@
 
 	import { onMount, getContext, tick } from 'svelte';
 
-	import { WEBUI_NAME, mobile, models, settings, user } from '$lib/stores';
+	import { WEBUI_NAME, config, mobile, models, settings, user } from '$lib/stores';
 	import { addNewModel, deleteModelById, getModelInfos, updateModelById } from '$lib/apis/models';
 
 	import { deleteModel } from '$lib/apis/ollama';
@@ -18,8 +20,12 @@
 	import EllipsisHorizontal from '../icons/EllipsisHorizontal.svelte';
 	import ModelMenu from './Models/ModelMenu.svelte';
 	import ModelDeleteConfirmDialog from '../common/ConfirmDialog.svelte';
+	import Tooltip from '../common/Tooltip.svelte';
+	import GarbageBin from '../icons/GarbageBin.svelte';
 
 	const i18n = getContext('i18n');
+
+	let shiftKey = false;
 
 	let showModelDeleteConfirm = false;
 
@@ -29,7 +35,17 @@
 	let modelsImportInputElement: HTMLInputElement;
 
 	let _models = [];
+
+	let filteredModels = [];
 	let selectedModel = null;
+
+	$: if (_models) {
+		filteredModels = _models
+			.filter((m) => m?.owned_by !== 'arena')
+			.filter(
+				(m) => searchValue === '' || m.name.toLowerCase().includes(searchValue.toLowerCase())
+			);
+	}
 
 	let sortable = null;
 	let searchValue = '';
@@ -90,6 +106,58 @@
 		window.addEventListener('message', messageHandler, false);
 	};
 
+	const moveToTopHandler = async (model) => {
+		// find models with position 0 and set them to 1
+		const topModels = _models.filter((m) => m.info?.meta?.position === 0);
+		for (const m of topModels) {
+			let info = m.info;
+			if (!info) {
+				info = {
+					id: m.id,
+					name: m.name,
+					meta: {
+						position: 1
+					},
+					params: {}
+				};
+			}
+
+			info.meta = {
+				...info.meta,
+				position: 1
+			};
+
+			await updateModelById(localStorage.token, info.id, info);
+		}
+
+		let info = model.info;
+
+		if (!info) {
+			info = {
+				id: model.id,
+				name: model.name,
+				meta: {
+					position: 0
+				},
+				params: {}
+			};
+		}
+
+		info.meta = {
+			...info.meta,
+			position: 0
+		};
+
+		const res = await updateModelById(localStorage.token, info.id, info);
+
+		if (res) {
+			toast.success($i18n.t(`Model {{name}} is now at the top`, { name: info.id }));
+		}
+
+		await models.set(await getModels(localStorage.token));
+		_models = $models;
+	};
+
 	const hideModelHandler = async (model) => {
 		let info = model.info;
 
@@ -140,7 +208,7 @@
 		saveAs(blob, `${model.id}-${Date.now()}.json`);
 	};
 
-	const positionChangeHanlder = async () => {
+	const positionChangeHandler = async () => {
 		// Get the new order of the models
 		const modelIds = Array.from(document.getElementById('model-list').children).map((child) =>
 			child.id.replace('model-item-', '')
@@ -190,10 +258,36 @@
 				animation: 150,
 				onUpdate: async (event) => {
 					console.log(event);
-					positionChangeHanlder();
+					positionChangeHandler();
 				}
 			});
 		}
+
+		const onKeyDown = (event) => {
+			if (event.key === 'Shift') {
+				shiftKey = true;
+			}
+		};
+
+		const onKeyUp = (event) => {
+			if (event.key === 'Shift') {
+				shiftKey = false;
+			}
+		};
+
+		const onBlur = () => {
+			shiftKey = false;
+		};
+
+		window.addEventListener('keydown', onKeyDown);
+		window.addEventListener('keyup', onKeyUp);
+		window.addEventListener('blur', onBlur);
+
+		return () => {
+			window.removeEventListener('keydown', onKeyDown);
+			window.removeEventListener('keyup', onKeyUp);
+			window.removeEventListener('blur', onBlur);
+		};
 	});
 </script>
 
@@ -210,9 +304,7 @@
 	}}
 />
 
-<div class=" text-lg font-semibold mb-3">{$i18n.t('Models')}</div>
-
-<div class=" flex w-full space-x-2">
+<div class=" flex w-full space-x-2 mb-2.5">
 	<div class="flex flex-1">
 		<div class=" self-center ml-1 mr-3">
 			<svg
@@ -237,7 +329,7 @@
 
 	<div>
 		<a
-			class=" px-2 py-2 rounded-xl border border-gray-200 dark:border-gray-600 dark:border-0 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 transition font-medium text-sm flex items-center space-x-1"
+			class=" px-2 py-2 rounded-xl border border-gray-200 dark:border-gray-600 dark:border-0 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 transition font-medium text-sm flex items-center space-x-1"
 			href="/workspace/models/create"
 		>
 			<svg
@@ -253,12 +345,23 @@
 		</a>
 	</div>
 </div>
-<hr class=" dark:border-gray-850 my-2.5" />
 
-<a class=" flex space-x-4 cursor-pointer w-full mb-2 px-3 py-2" href="/workspace/models/create">
-	<div class=" self-center w-10 flex-shrink-0">
+<div class="mb-3.5">
+	<div class="flex justify-between items-center">
+		<div class="flex md:self-center text-base font-medium px-0.5">
+			{$i18n.t('Models')}
+			<div class="flex self-center w-[1px] h-6 mx-2.5 bg-gray-50 dark:bg-gray-850" />
+			<span class="text-base font-medium text-gray-500 dark:text-gray-300"
+				>{filteredModels.length}</span
+			>
+		</div>
+	</div>
+</div>
+
+<a class=" flex space-x-4 cursor-pointer w-full mb-2 px-3 py-1" href="/workspace/models/create">
+	<div class=" self-center w-8 flex-shrink-0">
 		<div
-			class="w-full h-10 flex justify-center rounded-full bg-transparent dark:bg-gray-700 border border-dashed border-gray-200"
+			class="w-full h-8 flex justify-center rounded-full bg-transparent dark:bg-gray-700 border border-dashed border-gray-200"
 		>
 			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6">
 				<path
@@ -272,16 +375,14 @@
 
 	<div class=" self-center">
 		<div class=" font-semibold line-clamp-1">{$i18n.t('Create a model')}</div>
-		<div class=" text-sm line-clamp-1">{$i18n.t('Customize models for a specific purpose')}</div>
+		<div class=" text-sm line-clamp-1 text-gray-500">
+			{$i18n.t('Customize models for a specific purpose')}
+		</div>
 	</div>
 </a>
 
-<hr class=" dark:border-gray-850" />
-
 <div class=" my-2 mb-5" id="model-list">
-	{#each _models.filter((m) => searchValue === '' || m.name
-				.toLowerCase()
-				.includes(searchValue.toLowerCase())) as model}
+	{#each filteredModels as model}
 		<div
 			class=" flex space-x-4 cursor-pointer w-full px-3 py-2 dark:hover:bg-white/5 hover:bg-black/5 rounded-xl"
 			id="model-item-{model.id}"
@@ -292,7 +393,7 @@
 			>
 				<div class=" self-start w-8 pt-0.5">
 					<div
-						class=" rounded-full bg-stone-700 {model?.info?.meta?.hidden ?? false
+						class=" rounded-full object-cover {(model?.info?.meta?.hidden ?? false)
 							? 'brightness-90 dark:brightness-50'
 							: ''} "
 					>
@@ -305,63 +406,145 @@
 				</div>
 
 				<div
-					class=" flex-1 self-center {model?.info?.meta?.hidden ?? false ? 'text-gray-500' : ''}"
+					class=" flex-1 self-center {(model?.info?.meta?.hidden ?? false) ? 'text-gray-500' : ''}"
 				>
-					<div class="  font-semibold line-clamp-1">{model.name}</div>
-					<div class=" text-xs overflow-hidden text-ellipsis line-clamp-1">
-						{!!model?.info?.meta?.description ? model?.info?.meta?.description : model.id}
+					<Tooltip
+						content={marked.parse(
+							model?.ollama?.digest
+								? `${model?.ollama?.digest} *(${model?.ollama?.modified_at})*`
+								: ''
+						)}
+						className=" w-fit"
+						placement="top-start"
+					>
+						<div class="  font-semibold line-clamp-1">{model.name}</div>
+					</Tooltip>
+					<div class=" text-xs overflow-hidden text-ellipsis line-clamp-1 text-gray-500">
+						{!!model?.info?.meta?.description
+							? model?.info?.meta?.description
+							: model?.ollama?.digest
+								? `${model.id} (${model?.ollama?.digest})`
+								: model.id}
 					</div>
 				</div>
 			</a>
 			<div class="flex flex-row gap-0.5 self-center">
-				<a
-					class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
-					type="button"
-					href={`/workspace/models/edit?id=${encodeURIComponent(model.id)}`}
-				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-						class="w-4 h-4"
+				{#if shiftKey}
+					<Tooltip
+						content={(model?.info?.meta?.hidden ?? false)
+							? $i18n.t('Show Model')
+							: $i18n.t('Hide Model')}
 					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
-						/>
-					</svg>
-				</a>
+						<button
+							class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
+							type="button"
+							on:click={() => {
+								hideModelHandler(model);
+							}}
+						>
+							{#if model?.info?.meta?.hidden ?? false}
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke-width="1.5"
+									stroke="currentColor"
+									class="size-4"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"
+									/>
+								</svg>
+							{:else}
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke-width="1.5"
+									stroke="currentColor"
+									class="size-4"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
+									/>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+									/>
+								</svg>
+							{/if}
+						</button>
+					</Tooltip>
 
-				<ModelMenu
-					{model}
-					shareHandler={() => {
-						shareModelHandler(model);
-					}}
-					cloneHandler={() => {
-						cloneModelHandler(model);
-					}}
-					exportHandler={() => {
-						exportModelHandler(model);
-					}}
-					hideHandler={() => {
-						hideModelHandler(model);
-					}}
-					deleteHandler={() => {
-						selectedModel = model;
-						showModelDeleteConfirm = true;
-					}}
-					onClose={() => {}}
-				>
-					<button
-						class="self-center w-fit text-sm p-1.5 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
+					<Tooltip content={$i18n.t('Delete')}>
+						<button
+							class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
+							type="button"
+							on:click={() => {
+								deleteModelHandler(model);
+							}}
+						>
+							<GarbageBin />
+						</button>
+					</Tooltip>
+				{:else}
+					<a
+						class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 						type="button"
+						href={`/workspace/models/edit?id=${encodeURIComponent(model.id)}`}
 					>
-						<EllipsisHorizontal className="size-5" />
-					</button>
-				</ModelMenu>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke-width="1.5"
+							stroke="currentColor"
+							class="w-4 h-4"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
+							/>
+						</svg>
+					</a>
+
+					<ModelMenu
+						{model}
+						shareHandler={() => {
+							shareModelHandler(model);
+						}}
+						cloneHandler={() => {
+							cloneModelHandler(model);
+						}}
+						exportHandler={() => {
+							exportModelHandler(model);
+						}}
+						moveToTopHandler={() => {
+							moveToTopHandler(model);
+						}}
+						hideHandler={() => {
+							hideModelHandler(model);
+						}}
+						deleteHandler={() => {
+							selectedModel = model;
+							showModelDeleteConfirm = true;
+						}}
+						onClose={() => {}}
+					>
+						<button
+							class="self-center w-fit text-sm p-1.5 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
+							type="button"
+						>
+							<EllipsisHorizontal className="size-5" />
+						</button>
+					</ModelMenu>
+				{/if}
 			</div>
 		</div>
 	{/each}
@@ -493,35 +676,42 @@
 	{/if}
 </div>
 
-<div class=" my-16">
-	<div class=" text-lg font-semibold mb-3 line-clamp-1">
-		{$i18n.t('Made by OpenWebUI Community')}
+{#if $config?.features.enable_community_sharing}
+	<div class=" my-16">
+		<div class=" text-lg font-semibold mb-3 line-clamp-1">
+			{$i18n.t('Made by OpenWebUI Community')}
+		</div>
+
+		<a
+			class=" flex space-x-4 cursor-pointer w-full mb-2 px-3 py-2"
+			href="https://openwebui.com/#open-webui-community"
+			target="_blank"
+		>
+			<div class=" self-center w-10 flex-shrink-0">
+				<div
+					class="w-full h-10 flex justify-center rounded-full bg-transparent dark:bg-gray-700 border border-dashed border-gray-200"
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						viewBox="0 0 24 24"
+						fill="currentColor"
+						class="w-6"
+					>
+						<path
+							fill-rule="evenodd"
+							d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+							clip-rule="evenodd"
+						/>
+					</svg>
+				</div>
+			</div>
+
+			<div class=" self-center">
+				<div class=" font-semibold line-clamp-1">{$i18n.t('Discover a model')}</div>
+				<div class=" text-sm line-clamp-1">
+					{$i18n.t('Discover, download, and explore model presets')}
+				</div>
+			</div>
+		</a>
 	</div>
-
-	<a
-		class=" flex space-x-4 cursor-pointer w-full mb-2 px-3 py-2"
-		href="https://openwebui.com/#open-webui-community"
-		target="_blank"
-	>
-		<div class=" self-center w-10 flex-shrink-0">
-			<div
-				class="w-full h-10 flex justify-center rounded-full bg-transparent dark:bg-gray-700 border border-dashed border-gray-200"
-			>
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6">
-					<path
-						fill-rule="evenodd"
-						d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
-						clip-rule="evenodd"
-					/>
-				</svg>
-			</div>
-		</div>
-
-		<div class=" self-center">
-			<div class=" font-semibold line-clamp-1">{$i18n.t('Discover a model')}</div>
-			<div class=" text-sm line-clamp-1">
-				{$i18n.t('Discover, download, and explore model presets')}
-			</div>
-		</div>
-	</a>
-</div>
+{/if}

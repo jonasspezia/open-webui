@@ -8,8 +8,9 @@
 		mobile,
 		settings,
 		showArchivedChats,
-		showSettings,
+		showControls,
 		showSidebar,
+		temporaryChatEnabled,
 		user
 	} from '$lib/stores';
 
@@ -22,6 +23,8 @@
 	import UserMenu from './Sidebar/UserMenu.svelte';
 	import MenuLines from '../icons/MenuLines.svelte';
 	import AdjustmentsHorizontal from '../icons/AdjustmentsHorizontal.svelte';
+	import Map from '../icons/Map.svelte';
+	import { stringify } from 'postcss';
 
 	const i18n = getContext('i18n');
 
@@ -31,22 +34,25 @@
 
 	export let chat;
 	export let selectedModels;
-
 	export let showModelSelector = true;
-	export let showControls = false;
 
 	let showShareChatModal = false;
 	let showDownloadChatModal = false;
 </script>
 
 <ShareChatModal bind:show={showShareChatModal} chatId={$chatId} />
-<nav id="nav" class=" sticky py-2.5 top-0 flex flex-row justify-center z-10">
-	<div class=" flex max-w-full w-full mx-auto px-5 pt-0.5 md:px-[1rem]">
+
+<div class="sticky top-0 z-30 w-full px-1 py-2 -mb-8 flex items-center">
+	<div
+		class=" bg-gradient-to-b via-50% from-white via-white to-transparent dark:from-gray-900 dark:via-gray-900 dark:to-transparent pointer-events-none absolute inset-0 -bottom-7 z-[-1] blur"
+	></div>
+
+	<div class=" flex max-w-full w-full mx-auto px-2 pt-0.5 bg-transparent">
 		<div class="flex items-center w-full max-w-full">
 			<div
 				class="{$showSidebar
 					? 'md:hidden'
-					: ''} mr-3 self-start flex flex-none items-center text-gray-600 dark:text-gray-400"
+					: ''} mr-2 self-start flex flex-none items-center text-gray-600 dark:text-gray-400"
 			>
 				<button
 					id="sidebar-toggle-button"
@@ -54,6 +60,7 @@
 					on:click={() => {
 						showSidebar.set(!$showSidebar);
 					}}
+					aria-label="Toggle Sidebar"
 				>
 					<div class=" m-auto self-center">
 						<MenuLines />
@@ -69,8 +76,7 @@
 
 			<div class="self-start flex flex-none items-center text-gray-600 dark:text-gray-400">
 				<!-- <div class="md:hidden flex self-center w-[1px] h-5 mx-2 bg-gray-300 dark:bg-stone-700" /> -->
-
-				{#if shareEnabled && chat && chat.id}
+				{#if shareEnabled && chat && (chat.id || $temporaryChatEnabled)}
 					<Menu
 						{chat}
 						{shareEnabled}
@@ -82,7 +88,7 @@
 						}}
 					>
 						<button
-							class="hidden md:flex cursor-pointer px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
+							class="flex cursor-pointer px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
 							id="chat-context-menu-button"
 						>
 							<div class=" m-auto self-center">
@@ -105,18 +111,21 @@
 					</Menu>
 				{/if}
 
-				<Tooltip content={$i18n.t('Controls')}>
-					<button
-						class=" flex cursor-pointer px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
-						on:click={() => {
-							showControls = !showControls;
-						}}
-					>
-						<div class=" m-auto self-center">
-							<AdjustmentsHorizontal className=" size-5" strokeWidth="0.5" />
-						</div>
-					</button>
-				</Tooltip>
+				{#if !$mobile}
+					<Tooltip content={$i18n.t('Controls')}>
+						<button
+							class=" flex cursor-pointer px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
+							on:click={async () => {
+								await showControls.set(!$showControls);
+							}}
+							aria-label="Controls"
+						>
+							<div class=" m-auto self-center">
+								<AdjustmentsHorizontal className=" size-5" strokeWidth="0.5" />
+							</div>
+						</button>
+					</Tooltip>
+				{/if}
 
 				<Tooltip content={$i18n.t('New Chat')}>
 					<button
@@ -127,6 +136,7 @@
 						on:click={() => {
 							initNewChat();
 						}}
+						aria-label="New Chat"
 					>
 						<div class=" m-auto self-center">
 							<svg
@@ -174,4 +184,4 @@
 			</div>
 		</div>
 	</div>
-</nav>
+</div>

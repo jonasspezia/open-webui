@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { getRAGConfig, updateRAGConfig } from '$lib/apis/rag';
+	import { getRAGConfig, updateRAGConfig } from '$lib/apis/retrieval';
 	import Switch from '$lib/components/common/Switch.svelte';
 
-	import { documents, models } from '$lib/stores';
+	import { models } from '$lib/stores';
 	import { onMount, getContext } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import SensitiveInput from '$lib/components/common/SensitiveInput.svelte';
@@ -19,6 +19,7 @@
 		'serpstack',
 		'serper',
 		'serply',
+		'searchapi',
 		'duckduckgo',
 		'tavily',
 		'jina'
@@ -182,6 +183,34 @@
 									bind:value={webConfig.search.serply_api_key}
 								/>
 							</div>
+						{:else if webConfig.search.engine === 'searchapi'}
+							<div>
+								<div class=" self-center text-xs font-medium mb-1">
+									{$i18n.t('SearchApi API Key')}
+								</div>
+
+								<SensitiveInput
+									placeholder={$i18n.t('Enter SearchApi API Key')}
+									bind:value={webConfig.search.searchapi_api_key}
+								/>
+							</div>
+							<div class="mt-1.5">
+								<div class=" self-center text-xs font-medium mb-1">
+									{$i18n.t('SearchApi Engine')}
+								</div>
+
+								<div class="flex w-full">
+									<div class="flex-1">
+										<input
+											class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-none"
+											type="text"
+											placeholder={$i18n.t('Enter SearchApi Engine')}
+											bind:value={webConfig.search.searchapi_engine}
+											autocomplete="off"
+										/>
+									</div>
+								</div>
+							</div>
 						{:else if webConfig.search.engine === 'tavily'}
 							<div>
 								<div class=" self-center text-xs font-medium mb-1">
@@ -281,7 +310,7 @@
 	</div>
 	<div class="flex justify-end pt-3 text-sm font-medium">
 		<button
-			class=" px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-gray-100 transition rounded-lg"
+			class="px-3.5 py-1.5 text-sm font-medium bg-black hover:bg-gray-900 text-white dark:bg-white dark:text-black dark:hover:bg-gray-100 transition rounded-full"
 			type="submit"
 		>
 			{$i18n.t('Save')}

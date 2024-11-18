@@ -4,7 +4,7 @@
 	const { saveAs } = fileSaver;
 
 	import { onMount, getContext } from 'svelte';
-	import { WEBUI_NAME, prompts, tools } from '$lib/stores';
+	import { WEBUI_NAME, config, prompts, tools } from '$lib/stores';
 	import { createNewPrompt, deletePromptByCommand, getPrompts } from '$lib/apis/prompts';
 
 	import { goto } from '$app/navigation';
@@ -24,8 +24,11 @@
 	import ManifestModal from './common/ManifestModal.svelte';
 	import Heart from '../icons/Heart.svelte';
 	import DeleteConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
+	import GarbageBin from '../icons/GarbageBin.svelte';
 
 	const i18n = getContext('i18n');
+
+	let shiftKey = false;
 
 	let toolsImportInputElement: HTMLInputElement;
 	let importFiles;
@@ -38,6 +41,14 @@
 	let selectedTool = null;
 
 	let showDeleteConfirm = false;
+
+	let filteredItems = [];
+	$: filteredItems = $tools.filter(
+		(t) =>
+			query === '' ||
+			t.name.toLowerCase().includes(query.toLowerCase()) ||
+			t.id.toLowerCase().includes(query.toLowerCase())
+	);
 
 	const shareHandler = async (tool) => {
 		const item = await getToolById(localStorage.token, tool.id).catch((error) => {
@@ -107,6 +118,34 @@
 			tools.set(await getTools(localStorage.token));
 		}
 	};
+
+	onMount(() => {
+		const onKeyDown = (event) => {
+			if (event.key === 'Shift') {
+				shiftKey = true;
+			}
+		};
+
+		const onKeyUp = (event) => {
+			if (event.key === 'Shift') {
+				shiftKey = false;
+			}
+		};
+
+		const onBlur = () => {
+			shiftKey = false;
+		};
+
+		window.addEventListener('keydown', onKeyDown);
+		window.addEventListener('keyup', onKeyUp);
+		window.addEventListener('blur', onBlur);
+
+		return () => {
+			window.removeEventListener('keydown', onKeyDown);
+			window.removeEventListener('keyup', onKeyUp);
+			window.removeEventListener('blur', onBlur);
+		};
+	});
 </script>
 
 <svelte:head>
@@ -115,11 +154,7 @@
 	</title>
 </svelte:head>
 
-<div class="mb-3 flex justify-between items-center">
-	<div class=" text-lg font-semibold self-center">{$i18n.t('Tools')}</div>
-</div>
-
-<div class=" flex w-full space-x-2">
+<div class=" flex w-full space-x-2 mb-2.5">
 	<div class="flex flex-1">
 		<div class=" self-center ml-1 mr-3">
 			<svg
@@ -160,12 +195,21 @@
 		</a>
 	</div>
 </div>
-<hr class=" dark:border-gray-850 my-2.5" />
+
+<div class="mb-3.5">
+	<div class="flex justify-between items-center">
+		<div class="flex md:self-center text-base font-medium px-0.5">
+			{$i18n.t('Tools')}
+			<div class="flex self-center w-[1px] h-6 mx-2.5 bg-gray-50 dark:bg-gray-850" />
+			<span class="text-base font-medium text-gray-500 dark:text-gray-300"
+				>{filteredItems.length}</span
+			>
+		</div>
+	</div>
+</div>
 
 <div class="my-3 mb-5">
-	{#each $tools.filter((t) => query === '' || t.name
-				.toLowerCase()
-				.includes(query.toLowerCase()) || t.id.toLowerCase().includes(query.toLowerCase())) as tool}
+	{#each filteredItems as tool}
 		<div
 			class=" flex space-x-4 cursor-pointer w-full px-3 py-2 dark:hover:bg-white/5 hover:bg-black/5 rounded-xl"
 		>
@@ -206,78 +250,92 @@
 				</div>
 			</a>
 			<div class="flex flex-row gap-0.5 self-center">
-				{#if tool?.meta?.manifest?.funding_url ?? false}
-					<Tooltip content="Support">
+				{#if shiftKey}
+					<Tooltip content={$i18n.t('Delete')}>
+						<button
+							class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
+							type="button"
+							on:click={() => {
+								deleteHandler(tool);
+							}}
+						>
+							<GarbageBin />
+						</button>
+					</Tooltip>
+				{:else}
+					{#if tool?.meta?.manifest?.funding_url ?? false}
+						<Tooltip content="Support">
+							<button
+								class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
+								type="button"
+								on:click={() => {
+									selectedTool = tool;
+									showManifestModal = true;
+								}}
+							>
+								<Heart />
+							</button>
+						</Tooltip>
+					{/if}
+
+					<Tooltip content={$i18n.t('Valves')}>
 						<button
 							class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
 							type="button"
 							on:click={() => {
 								selectedTool = tool;
-								showManifestModal = true;
+								showValvesModal = true;
 							}}
 						>
-							<Heart />
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke-width="1.5"
+								stroke="currentColor"
+								class="size-4"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
+								/>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+								/>
+							</svg>
 						</button>
 					</Tooltip>
-				{/if}
 
-				<Tooltip content={$i18n.t('Valves')}>
-					<button
-						class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
-						type="button"
-						on:click={() => {
-							selectedTool = tool;
-							showValvesModal = true;
+					<ToolMenu
+						editHandler={() => {
+							goto(`/workspace/tools/edit?id=${encodeURIComponent(tool.id)}`);
 						}}
+						shareHandler={() => {
+							shareHandler(tool);
+						}}
+						cloneHandler={() => {
+							cloneHandler(tool);
+						}}
+						exportHandler={() => {
+							exportHandler(tool);
+						}}
+						deleteHandler={async () => {
+							selectedTool = tool;
+							showDeleteConfirm = true;
+						}}
+						onClose={() => {}}
 					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke-width="1.5"
-							stroke="currentColor"
-							class="size-4"
+						<button
+							class="self-center w-fit text-sm p-1.5 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
+							type="button"
 						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
-							/>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-							/>
-						</svg>
-					</button>
-				</Tooltip>
-
-				<ToolMenu
-					editHandler={() => {
-						goto(`/workspace/tools/edit?id=${encodeURIComponent(tool.id)}`);
-					}}
-					shareHandler={() => {
-						shareHandler(tool);
-					}}
-					cloneHandler={() => {
-						cloneHandler(tool);
-					}}
-					exportHandler={() => {
-						exportHandler(tool);
-					}}
-					deleteHandler={async () => {
-						selectedTool = tool;
-						showDeleteConfirm = true;
-					}}
-					onClose={() => {}}
-				>
-					<button
-						class="self-center w-fit text-sm p-1.5 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
-						type="button"
-					>
-						<EllipsisHorizontal className="size-5" />
-					</button>
-				</ToolMenu>
+							<EllipsisHorizontal className="size-5" />
+						</button>
+					</ToolMenu>
+				{/if}
 			</div>
 		</div>
 	{/each}
@@ -364,38 +422,45 @@
 	</div>
 </div>
 
-<div class=" my-16">
-	<div class=" text-lg font-semibold mb-3 line-clamp-1">
-		{$i18n.t('Made by OpenWebUI Community')}
+{#if $config?.features.enable_community_sharing}
+	<div class=" my-16">
+		<div class=" text-lg font-semibold mb-3 line-clamp-1">
+			{$i18n.t('Made by OpenWebUI Community')}
+		</div>
+
+		<a
+			class=" flex space-x-4 cursor-pointer w-full mb-2 px-3 py-2"
+			href="https://openwebui.com/#open-webui-community"
+			target="_blank"
+		>
+			<div class=" self-center w-10 flex-shrink-0">
+				<div
+					class="w-full h-10 flex justify-center rounded-full bg-transparent dark:bg-gray-700 border border-dashed border-gray-200"
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						viewBox="0 0 24 24"
+						fill="currentColor"
+						class="w-6"
+					>
+						<path
+							fill-rule="evenodd"
+							d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+							clip-rule="evenodd"
+						/>
+					</svg>
+				</div>
+			</div>
+
+			<div class=" self-center">
+				<div class=" font-semibold line-clamp-1">{$i18n.t('Discover a tool')}</div>
+				<div class=" text-sm line-clamp-1">
+					{$i18n.t('Discover, download, and explore custom tools')}
+				</div>
+			</div>
+		</a>
 	</div>
-
-	<a
-		class=" flex space-x-4 cursor-pointer w-full mb-2 px-3 py-2"
-		href="https://openwebui.com/#open-webui-community"
-		target="_blank"
-	>
-		<div class=" self-center w-10 flex-shrink-0">
-			<div
-				class="w-full h-10 flex justify-center rounded-full bg-transparent dark:bg-gray-700 border border-dashed border-gray-200"
-			>
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6">
-					<path
-						fill-rule="evenodd"
-						d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
-						clip-rule="evenodd"
-					/>
-				</svg>
-			</div>
-		</div>
-
-		<div class=" self-center">
-			<div class=" font-semibold line-clamp-1">{$i18n.t('Discover a tool')}</div>
-			<div class=" text-sm line-clamp-1">
-				{$i18n.t('Discover, download, and explore custom tools')}
-			</div>
-		</div>
-	</a>
-</div>
+{/if}
 
 <DeleteConfirmDialog
 	bind:show={showDeleteConfirm}

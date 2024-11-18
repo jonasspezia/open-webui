@@ -69,6 +69,7 @@ type ChatCompletedForm = {
 	model: string;
 	messages: string[];
 	chat_id: string;
+	session_id: string;
 };
 
 export const chatCompleted = async (token: string, body: ChatCompletedForm) => {
@@ -207,7 +208,7 @@ export const updateTaskConfig = async (token: string, config: object) => {
 export const generateTitle = async (
 	token: string = '',
 	model: string,
-	prompt: string,
+	messages: string[],
 	chat_id?: string
 ) => {
 	let error = null;
@@ -221,7 +222,7 @@ export const generateTitle = async (
 		},
 		body: JSON.stringify({
 			model: model,
-			prompt: prompt,
+			messages: messages,
 			...(chat_id && { chat_id: chat_id })
 		})
 	})
@@ -242,6 +243,78 @@ export const generateTitle = async (
 	}
 
 	return res?.choices[0]?.message?.content.replace(/["']/g, '') ?? 'New Chat';
+};
+
+export const generateTags = async (
+	token: string = '',
+	model: string,
+	messages: string,
+	chat_id?: string
+) => {
+	let error = null;
+
+	const res = await fetch(`${WEBUI_BASE_URL}/api/task/tags/completions`, {
+		method: 'POST',
+		headers: {
+			Accept: 'application/json',
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}`
+		},
+		body: JSON.stringify({
+			model: model,
+			messages: messages,
+			...(chat_id && { chat_id: chat_id })
+		})
+	})
+		.then(async (res) => {
+			if (!res.ok) throw await res.json();
+			return res.json();
+		})
+		.catch((err) => {
+			console.log(err);
+			if ('detail' in err) {
+				error = err.detail;
+			}
+			return null;
+		});
+
+	if (error) {
+		throw error;
+	}
+
+	try {
+		// Step 1: Safely extract the response string
+		const response = res?.choices[0]?.message?.content ?? '';
+
+		// Step 2: Attempt to fix common JSON format issues like single quotes
+		const sanitizedResponse = response.replace(/['‘’`]/g, '"'); // Convert single quotes to double quotes for valid JSON
+
+		// Step 3: Find the relevant JSON block within the response
+		const jsonStartIndex = sanitizedResponse.indexOf('{');
+		const jsonEndIndex = sanitizedResponse.lastIndexOf('}');
+
+		// Step 4: Check if we found a valid JSON block (with both `{` and `}`)
+		if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
+			const jsonResponse = sanitizedResponse.substring(jsonStartIndex, jsonEndIndex + 1);
+
+			// Step 5: Parse the JSON block
+			const parsed = JSON.parse(jsonResponse);
+
+			// Step 6: If there's a "tags" key, return the tags array; otherwise, return an empty array
+			if (parsed && parsed.tags) {
+				return Array.isArray(parsed.tags) ? parsed.tags : [];
+			} else {
+				return [];
+			}
+		}
+
+		// If no valid JSON block found, return an empty array
+		return [];
+	} catch (e) {
+		// Catch and safely return empty array on any parsing errors
+		console.error('Failed to parse response: ', e);
+		return [];
+	}
 };
 
 export const generateEmoji = async (
@@ -330,6 +403,42 @@ export const generateSearchQuery = async (
 	}
 
 	return res?.choices[0]?.message?.content.replace(/["']/g, '') ?? prompt;
+};
+
+export const generateMoACompletion = async (
+	token: string = '',
+	model: string,
+	prompt: string,
+	responses: string[]
+) => {
+	const controller = new AbortController();
+	let error = null;
+
+	const res = await fetch(`${WEBUI_BASE_URL}/api/task/moa/completions`, {
+		signal: controller.signal,
+		method: 'POST',
+		headers: {
+			Accept: 'application/json',
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}`
+		},
+		body: JSON.stringify({
+			model: model,
+			prompt: prompt,
+			responses: responses,
+			stream: true
+		})
+	}).catch((err) => {
+		console.log(err);
+		error = err;
+		return null;
+	});
+
+	if (error) {
+		throw error;
+	}
+
+	return [res, controller];
 };
 
 export const getPipelinesList = async (token: string = '') => {
@@ -628,6 +737,7 @@ export const getBackendConfig = async () => {
 
 	const res = await fetch(`${WEBUI_BASE_URL}/api/config`, {
 		method: 'GET',
+		credentials: 'include',
 		headers: {
 			'Content-Type': 'application/json'
 		}
@@ -912,6 +1022,7 @@ export interface ModelConfig {
 export interface ModelMeta {
 	description?: string;
 	capabilities?: object;
+	profile_image_url?: string;
 }
 
 export interface ModelParams {}

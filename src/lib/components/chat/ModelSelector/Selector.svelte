@@ -12,29 +12,37 @@
 
 	import { deleteModel, getOllamaVersion, pullModel } from '$lib/apis/ollama';
 
-	import { user, MODEL_DOWNLOAD_POOL, models, mobile } from '$lib/stores';
+	import { user, MODEL_DOWNLOAD_POOL, models, mobile, temporaryChatEnabled } from '$lib/stores';
 	import { toast } from 'svelte-sonner';
 	import { capitalizeFirstLetter, sanitizeResponseContent, splitStream } from '$lib/utils';
 	import { getModels } from '$lib/apis';
 
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
+	import Switch from '$lib/components/common/Switch.svelte';
+	import ChatBubbleOval from '$lib/components/icons/ChatBubbleOval.svelte';
+	import { goto } from '$app/navigation';
 
 	const i18n = getContext('i18n');
 	const dispatch = createEventDispatcher();
 
+	export let id = '';
 	export let value = '';
 	export let placeholder = 'Select a model';
 	export let searchEnabled = true;
 	export let searchPlaceholder = $i18n.t('Search a model');
 
+	export let showTemporaryChatControl = false;
+
 	export let items: {
 		label: string;
 		value: string;
+		model: Model;
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		[key: string]: any;
-	} = [];
+	}[] = [];
 
 	export let className = 'w-[32rem]';
+	export let triggerClassName = 'text-lg';
 
 	let show = false;
 
@@ -59,14 +67,15 @@
 				return _item;
 			}),
 		{
-			keys: ['value', 'label', 'tags', 'desc', 'modelName']
+			keys: ['value', 'tags', 'modelName'],
+			threshold: 0.3
 		}
 	);
 
 	$: filteredItems = searchValue
 		? fuse.search(searchValue).map((e) => {
 				return e.item;
-		  })
+			})
 		: items.filter((item) => !item.model?.info?.meta?.hidden);
 
 	const pullModelHandler = async () => {
@@ -222,9 +231,13 @@
 	}}
 	closeFocus={false}
 >
-	<DropdownMenu.Trigger class="relative w-full font-primary" aria-label={placeholder}>
+	<DropdownMenu.Trigger
+		class="relative w-full font-primary"
+		aria-label={placeholder}
+		id="model-selector-{id}-button"
+	>
 		<div
-			class="flex w-full text-left px-0.5 outline-none bg-transparent truncate text-lg font-semibold placeholder-gray-400 focus:outline-none"
+			class="flex w-full text-left px-0.5 outline-none bg-transparent truncate {triggerClassName} justify-between font-medium placeholder-gray-400 focus:outline-none"
 		>
 			{#if selectedModel}
 				{selectedModel.label}
@@ -238,10 +251,10 @@
 	<DropdownMenu.Content
 		class=" z-40 {$mobile
 			? `w-full`
-			: `${className}`} max-w-[calc(100vw-1rem)] justify-start rounded-xl  bg-white dark:bg-gray-850 dark:text-white shadow-lg border border-gray-300/30 dark:border-gray-700/40  outline-none"
+			: `${className}`} max-w-[calc(100vw-1rem)] justify-start rounded-xl  bg-white dark:bg-gray-850 dark:text-white shadow-lg  outline-none"
 		transition={flyAndScale}
 		side={$mobile ? 'bottom' : 'bottom-start'}
-		sideOffset={4}
+		sideOffset={3}
 	>
 		<slot>
 			{#if searchEnabled}
@@ -274,7 +287,7 @@
 					/>
 				</div>
 
-				<hr class="border-gray-100 dark:border-gray-800" />
+				<hr class="border-gray-50 dark:border-gray-800" />
 			{/if}
 
 			<div class="px-3 my-2 max-h-64 overflow-y-auto scrollbar-hidden group">
@@ -295,7 +308,7 @@
 					>
 						<div class="flex flex-col">
 							{#if $mobile && (item?.model?.info?.meta?.tags ?? []).length > 0}
-								<div class="flex gap-0.5 self-start h-full mb-0.5 -translate-x-1">
+								<div class="flex gap-0.5 self-start h-full mb-1.5 -translate-x-1">
 									{#each item.model?.info?.meta.tags as tag}
 										<div
 											class=" text-xs font-bold px-1 rounded uppercase line-clamp-1 bg-gray-500/20 text-gray-700 dark:text-gray-200"
@@ -411,7 +424,7 @@
 						</div>
 
 						{#if value === item.value}
-							<div class="ml-auto pl-2">
+							<div class="ml-auto pl-2 pr-2 md:pr-0">
 								<Check />
 							</div>
 						{/if}
@@ -467,10 +480,16 @@
 							</div>
 
 							<div class="flex flex-col self-start">
-								<div class="line-clamp-1">
-									Downloading "{model}" {'pullProgress' in $MODEL_DOWNLOAD_POOL[model]
-										? `(${$MODEL_DOWNLOAD_POOL[model].pullProgress}%)`
-										: ''}
+								<div class="flex gap-1">
+									<div class="line-clamp-1">
+										Downloading "{model}"
+									</div>
+
+									<div class="flex-shrink-0">
+										{'pullProgress' in $MODEL_DOWNLOAD_POOL[model]
+											? `(${$MODEL_DOWNLOAD_POOL[model].pullProgress}%)`
+											: ''}
+									</div>
 								</div>
 
 								{#if 'digest' in $MODEL_DOWNLOAD_POOL[model] && $MODEL_DOWNLOAD_POOL[model].digest}
@@ -481,7 +500,7 @@
 							</div>
 						</div>
 
-						<div class="mr-2 translate-y-0.5">
+						<div class="mr-2 ml-1 translate-y-0.5">
 							<Tooltip content={$i18n.t('Cancel')}>
 								<button
 									class="text-gray-800 dark:text-gray-100"
@@ -512,6 +531,43 @@
 					</div>
 				{/each}
 			</div>
+
+			{#if showTemporaryChatControl}
+				<hr class="border-gray-50 dark:border-gray-800" />
+
+				<div class="flex items-center mx-2 my-2">
+					<button
+						class="flex justify-between w-full font-medium line-clamp-1 select-none items-center rounded-button py-2 px-3 text-sm text-gray-700 dark:text-gray-100 outline-none transition-all duration-75 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer data-[highlighted]:bg-muted"
+						on:click={async () => {
+							temporaryChatEnabled.set(!$temporaryChatEnabled);
+							await goto('/');
+							const newChatButton = document.getElementById('new-chat-button');
+							setTimeout(() => {
+								newChatButton?.click();
+							}, 0);
+
+							// add 'temporary-chat=true' to the URL
+							if ($temporaryChatEnabled) {
+								history.replaceState(null, '', '?temporary-chat=true');
+							} else {
+								history.replaceState(null, '', location.pathname);
+							}
+
+							show = false;
+						}}
+					>
+						<div class="flex gap-2.5 items-center">
+							<ChatBubbleOval className="size-4" strokeWidth="2.5" />
+
+							{$i18n.t(`Temporary Chat`)}
+						</div>
+
+						<div>
+							<Switch state={$temporaryChatEnabled} />
+						</div>
+					</button>
+				</div>
+			{/if}
 
 			<div class="hidden w-[42rem]" />
 			<div class="hidden w-[32rem]" />

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 
 	export let show = false;
 	export let src = '';
@@ -9,14 +9,14 @@
 
 	let previewElement = null;
 
-	const downloadImage = (url, filename) => {
+	const downloadImage = (url, filename, prefixName = '') => {
 		fetch(url)
 			.then((response) => response.blob())
 			.then((blob) => {
 				const objectUrl = window.URL.createObjectURL(blob);
 				const link = document.createElement('a');
 				link.href = objectUrl;
-				link.download = filename;
+				link.download = `${prefixName}${filename}`;
 				document.body.appendChild(link);
 				link.click();
 				document.body.removeChild(link);
@@ -45,6 +45,14 @@
 		document.body.removeChild(previewElement);
 		document.body.style.overflow = 'unset';
 	}
+
+	onDestroy(() => {
+		show = false;
+
+		if (previewElement) {
+			document.body.removeChild(previewElement);
+		}
+	});
 </script>
 
 {#if show}
@@ -79,7 +87,7 @@
 				<button
 					class=" p-5"
 					on:click={() => {
-						downloadImage(src, src.substring(src.lastIndexOf('/') + 1));
+						downloadImage(src, src.substring(src.lastIndexOf('/') + 1), alt);
 					}}
 				>
 					<svg
