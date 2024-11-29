@@ -2626,7 +2626,7 @@ async def get_manifest_json():
     return {
         "name": WEBUI_NAME,
         "short_name": WEBUI_NAME,
-        "description": "Open WebUI is an open, extensible, user-friendly interface for AI that adapts to your workflow.",
+        "description": "DoctorAI é uma interface de inteligência artificial para profissionais da saúde que é fácil de usar para IA e que se adapta ao seu fluxo de trabalho.",
         "start_url": "/",
         "display": "standalone",
         "background_color": "#343541",
