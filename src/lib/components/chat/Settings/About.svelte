@@ -107,37 +107,37 @@
 		<hr class=" dark:border-gray-850" />
 
 		<div class="flex space-x-1">
-			<a href="https://discord.gg/5rJgQTnV4s" target="_blank">
+			<a href="https://teledocmedical.com" target="_blank">
 				<img
-					alt="Discord"
-					src="https://img.shields.io/badge/Discord-Open_WebUI-blue?logo=discord&logoColor=white"
+					alt="WhatsApp"
+					src="https://img.shields.io/badge/-Teledoc-blue%3Flogo%3Ddiscord%26logoColor%3Dwhite"
 				/>
 			</a>
 
 			<a href="https://twitter.com/OpenWebUI" target="_blank">
 				<img
-					alt="X (formerly Twitter) Follow"
-					src="https://img.shields.io/twitter/follow/OpenWebUI"
+					alt="Instagram"
+					src="https://img.shields.io/badge/Instagram--blue%3Flogo%3Ddiscord%26logoColor%3Dwhite"
 				/>
 			</a>
 
-			<a href="https://github.com/open-webui/open-webui" target="_blank">
+			<a href="https://teledocmedical.com" target="_blank">
 				<img
-					alt="Github Repo"
-					src="https://img.shields.io/github/stars/open-webui/open-webui?style=social&label=Star us on Github"
+					alt="DoctorAI"
+					src="https://img.shields.io/badge/DoctorAI-blue"
 				/>
 			</a>
 		</div>
 
 		<div class="mt-2 text-xs text-gray-400 dark:text-gray-500">
-			{#if !$WEBUI_NAME.includes('Open WebUI')}
+			{#if !$WEBUI_NAME.includes('DoctorAI')}
 				<span class=" text-gray-500 dark:text-gray-300 font-medium">{$WEBUI_NAME}</span> -
 			{/if}
 			{$i18n.t('Created by')}
 			<a
 				class=" text-gray-500 dark:text-gray-300 font-medium"
 				href="https://github.com/tjbck"
-				target="_blank">Timothy J. Baek</a
+				target="_blank">Dr. Jonas Spezia | Teledoc Journey Medical</a
 			>
 		</div>
 	</div>
