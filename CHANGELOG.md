@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **🌍 Enhanced Translations**: Various language translations improved to make the WebUI more accessible and user-friendly worldwide.
+- **🌍 Enhanced Translations**: Various language translations improved to make the DoctorAI more accessible and user-friendly worldwide.
 
 ### Fixed
 
@@ -104,7 +104,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **💻 Redesigned Collaborative Workspace**: Enhanced support for multiple users contributing to models, knowledge, prompts, or tools, improving collaboration.
 - **🔧 Auto-Selected Tools in Model Editor**: Tools enabled through the model editor are now automatically selected, whereas previously it only gave users the option to enable the tool, reducing manual steps and enhancing efficiency.
 - **🔔 Web Search & Tools Indicator**: A clear indication now shows when web search or tools are active, reducing confusion.
-- **🔑 Toggle API Key Auth**: Tighten security by easily enabling or disabling API key authentication option for Open WebUI.
+- **🔑 Toggle API Key Auth**: Tighten security by easily enabling or disabling API key authentication option for DoctorAI.
 - **🗂️ Agentic Retrieval**: Improve RAG accuracy via smart pre-processing of chat history to determine the best queries before retrieval.
 - **📁 Large Text as File Option**: Optionally convert large pasted text into a file upload, keeping the chat interface cleaner.
 - **🗂️ Toggle Citations for Models**: Ability to disable citations has been introduced in the model editor.
@@ -119,7 +119,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **🎥 YouTube Video Attachments**: Fixed issues preventing proper loading and attachment of YouTube videos as files.
 - **🔄 Shared Chat Update**: Corrected issues where shared chats were not updating, improving collaboration consistency.
 - **🔍 DuckDuckGo Rate Limit Fix**: Addressed issues with DuckDuckGo search integration, enhancing search stability and performance when operating within rate limits.
-- **🧾 Citations Relevance Fix**: Adjusted the relevance percentage calculation for citations, so that Open WebUI properly reflect the accuracy of a retrieved document in RAG, ensuring users get clearer insights into sources.
+- **🧾 Citations Relevance Fix**: Adjusted the relevance percentage calculation for citations, so that DoctorAI properly reflect the accuracy of a retrieved document in RAG, ensuring users get clearer insights into sources.
 - **🔑 Jina Search API Key Requirement**: Added the option to input an API key for Jina Search, ensuring smooth functionality as keys are now mandatory.
 
 ### Changed
@@ -188,8 +188,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **🔢 Ollama Batch Embeddings**: Leverage new batch embedding support for improved efficiency and performance with Ollama embedding models.
 - **🔍 Enhanced Add Text Content Modal**: Enjoy a cleaner, more intuitive workflow for adding and curating knowledge content with an upgraded input modal from our Knowledge workspace.
 - **🖋️ Rich Text Input for Chats**: Make your chat inputs more dynamic with support for rich text formatting. Your conversations just got a lot more polished and professional.
-- **⚡ Faster Whisper Model Configurability**: Customize your local faster whisper model directly from the WebUI.
-- **☁️ Experimental S3 Support**: Enable stateless WebUI instances with S3 support, greatly enhancing scalability and balancing heavy workloads.
+- **⚡ Faster Whisper Model Configurability**: Customize your local faster whisper model directly from the DoctorAI.
+- **☁️ Experimental S3 Support**: Enable stateless DoctorAI instances with S3 support, greatly enhancing scalability and balancing heavy workloads.
 - **🔕 Disable Update Toast**: Now you can streamline your workspace even further—choose to disable update notifications for a more focused experience.
 - **🌟 RAG Citation Relevance Percentage**: Easily assess citation accuracy with the addition of relevance percentages in RAG results.
 - **⚙️ Mermaid Copy Button**: Mermaid diagrams now come with a handy copy button, simplifying the extraction and use of diagram contents directly in your workflow.
@@ -226,7 +226,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **📚 Knowledge Feature**: Reimagined documents feature, now more performant with a better UI for enhanced organization; includes streamlined API integration for Retrieval-Augmented Generation (RAG). Detailed documentation forthcoming: https://docs.openwebui.com/
+- **📚 Knowledge Feature**: Reimagined documents feature, now more performant with a better UI for enhanced organization; includes streamlined API integration for Retrieval-Augmented Generation (RAG). Detailed documentation forthcoming: https://teledocmedical.com/
 - **🌐 New Landing Page**: Freshly designed landing page; toggle between the new UI and the classic chat UI from Settings > Interface for a personalized experience.
 - **📁 Full Document Retrieval Mode**: Toggle between full document retrieval or traditional snippets by clicking on the file item. This mode enhances document capabilities and supports comprehensive tasks like summarization by utilizing the entire content instead of RAG.
 - **📄 Extracted File Content Display**: View extracted content directly by clicking on the file item, simplifying file analysis.
@@ -307,7 +307,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **🚀 Rendering Optimization**: Significantly improved message rendering performance, enhancing user experience and webui responsiveness.
+- **🚀 Rendering Optimization**: Significantly improved message rendering performance, enhancing user experience and DoctorAI responsiveness.
 - **💖 Favorite Response Feature in Chat Overview**: Users can now mark responses as favorite directly from the chat overview, enhancing ease of retrieval and organization of preferred responses.
 - **💬 Create Message Pairs with Shortcut**: Implemented creation of new message pairs using Cmd/Ctrl+Shift+Enter, making conversation editing faster and more intuitive.
 - **🌍 Expanded User Prompt Variables**: Added weekday, timezone, and language information variables to user prompts to match system prompt variables.
@@ -336,7 +336,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **🚀 WebSocket Redis Support**: Enhanced load balancing capabilities for multiple instance setups, promoting better performance and reliability in WebUI.
+- **🚀 WebSocket Redis Support**: Enhanced load balancing capabilities for multiple instance setups, promoting better performance and reliability in DoctorAI.
 - **🔧 Adjustable Chat Controls**: Introduced width-adjustable chat controls, enabling a personalized and more comfortable user interface.
 - **🌎 i18n Updates**: Improved and updated the Chinese translations.
 
@@ -345,13 +345,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **🌐 Task Model Unloading Issue**: Modified task handling to use the Ollama /api/chat endpoint instead of OpenAI compatible endpoint, ensuring models stay loaded and ready with custom parameters, thus minimizing delays in task execution.
 - **📝 Title Generation Fix for OpenAI Compatible APIs**: Resolved an issue preventing the generation of titles, enhancing consistency and reliability when using multiple API providers.
 - **🗃️ RAG Duplicate Collection Issue**: Fixed a bug causing repeated processing of the same uploaded file. Now utilizes indexed files to prevent unnecessary duplications, optimizing resource usage.
-- **🖼️ Image Generation Enhancement**: Refactored OpenAI image generation endpoint to be asynchronous, preventing the WebUI from becoming unresponsive during processing, thus enhancing user experience.
+- **🖼️ Image Generation Enhancement**: Refactored OpenAI image generation endpoint to be asynchronous, preventing the DoctorAI from becoming unresponsive during processing, thus enhancing user experience.
 - **🔓 Downgrade Authlib**: Reverted Authlib to version 1.3.1 to address and resolve issues concerning OAuth functionality.
 
 ### Changed
 
 - **🔍 Improved Message Interaction**: Enhanced the message node interface to allow for easier focus redirection with a simple click, streamlining user interaction.
-- **✨ Styling Refactor**: Updated WebUI styling for a cleaner, more modern look, enhancing user experience across the platform.
+- **✨ Styling Refactor**: Updated DoctorAI styling for a cleaner, more modern look, enhancing user experience across the platform.
 
 ## [0.3.22] - 2024-09-19
 
@@ -390,7 +390,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **🐳 Docker Launch Issue**: Resolved the problem preventing Open-WebUI from launching correctly when using Docker.
+- **🐳 Docker Launch Issue**: Resolved the problem preventing DoctorAI from launching correctly when using Docker.
 
 ### Changed
 
@@ -415,7 +415,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **🌐 Refined Web Search Integration**: Deprecated the Search Query Generation Prompt threshold; introduced a toggle button for "Enable Web Search Query Generation" allowing users to opt-in to using web search more judiciously.
-- **📝 Default Prompt Templates Update**: Emptied environment variable templates for search and title generation now default to the Open WebUI default prompt templates, simplifying configuration efforts.
+- **📝 Default Prompt Templates Update**: Emptied environment variable templates for search and title generation now default to the DoctorAI default prompt templates, simplifying configuration efforts.
 
 ## [0.3.19] - 2024-09-05
 
@@ -447,7 +447,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **🔄 Import/Export Configuration**: Users can now import and export webui configurations from admin settings > Database, simplifying setup replication across systems.
+- **🔄 Import/Export Configuration**: Users can now import and export DoctorAI configurations from admin settings > Database, simplifying setup replication across systems.
 - **🌍 Web Search via URL Parameter**: Added support for activating web search directly through URL by setting 'web-search=true'.
 - **🌐 SearchApi Integration**: Added support for SearchApi as an alternative web search provider, enhancing search capabilities within the platform.
 - **🔍 Literal Type Support in Tools**: Tools now support the Literal type.
@@ -472,11 +472,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **🚀 Config DB Migration**: Migrated configuration handling from config.json to the database, enabling high-availability setups and load balancing across multiple Open WebUI instances.
+- **🚀 Config DB Migration**: Migrated configuration handling from config.json to the database, enabling high-availability setups and load balancing across multiple DoctorAI instances.
 - **🔗 Call Mode Activation via URL**: Added a 'call=true' URL search parameter enabling direct shortcuts to activate call mode, enhancing user interaction on mobile devices.
 - **✨ TTS Content Control**: Added functionality to control how message content is segmented for Text-to-Speech (TTS) generation requests, allowing for more flexible speech output options.
 - **😄 Show Knowledge Search Status**: Enhanced model usage transparency by displaying status when working with knowledge-augmented models, helping users understand the system's state during queries.
-- **👆 Click-to-Copy for Codespan**: Enhanced interactive experience in the WebUI by allowing users to click to copy content from code spans directly.
+- **👆 Click-to-Copy for Codespan**: Enhanced interactive experience in the DoctorAI by allowing users to click to copy content from code spans directly.
 - **🚫 API User Blocking via Model Filter**: Introduced the ability to block API users based on customized model filters, enhancing security and control over API access.
 - **🎬 Call Overlay Styling**: Adjusted call overlay styling on large screens to not cover the entire interface, but only the chat control area, for a more unobtrusive interaction experience.
 
@@ -543,7 +543,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **🎨 Enhanced Markdown Rendering**: Significant improvements in rendering markdown, ensuring smooth and reliable display of LaTeX and Mermaid charts, enhancing user experience with more robust visual content.
-- **🔄 Auto-Install Tools & Functions Python Dependencies**: For 'Tools' and 'Functions', Open WebUI now automatically install extra python requirements specified in the frontmatter, streamlining setup processes and customization.
+- **🔄 Auto-Install Tools & Functions Python Dependencies**: For 'Tools' and 'Functions', DoctorAI now automatically install extra python requirements specified in the frontmatter, streamlining setup processes and customization.
 - **🌀 OAuth Email Claim Customization**: Introduced an 'OAUTH_EMAIL_CLAIM' variable to allow customization of the default "email" claim within OAuth configurations, providing greater flexibility in authentication processes.
 - **📶 Websocket Reconnection**: Enhanced reliability with the capability to automatically reconnect when a websocket is closed, ensuring consistent and stable communication.
 - **🤳 Haptic Feedback on Support Devices**: Android devices now support haptic feedback for an immersive tactile experience during certain interactions.
@@ -704,7 +704,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **✨ "Functions" Feature**: You can now utilize "Functions" like filters (middleware) and pipe (model) functions directly within the WebUI. While largely compatible with Pipelines, these native functions can be executed easily within Open WebUI. Example use cases for filter functions include usage monitoring, real-time translation, moderation, and automemory. For pipe functions, the scope ranges from Cohere and Anthropic integration directly within Open WebUI, enabling "Valves" for per-user OpenAI API key usage, and much more. If you encounter issues, SAFE_MODE has been introduced.
+- **✨ "Functions" Feature**: You can now utilize "Functions" like filters (middleware) and pipe (model) functions directly within the DoctorAI. While largely compatible with Pipelines, these native functions can be executed easily within DoctorAI. Example use cases for filter functions include usage monitoring, real-time translation, moderation, and automemory. For pipe functions, the scope ranges from Cohere and Anthropic integration directly within DoctorAI, enabling "Valves" for per-user OpenAI API key usage, and much more. If you encounter issues, SAFE_MODE has been introduced.
 - **📁 Files API**: Compatible with OpenAI, this feature allows for custom Retrieval-Augmented Generation (RAG) in conjunction with the Filter Function. More examples will be shared on our community platform and official documentation website.
 - **🛠️ Tool Enhancements**: Tools now support citations and "Valves". Documentation will be available shortly.
 - **🔗 Iframe Support via Files API**: Enables rendering HTML directly into your chat interface using functions and tools. Use cases include playing games like DOOM and Snake, displaying a weather applet, and implementing Anthropic "artifacts"-like features. Stay tuned for updates on our community platform and documentation.
@@ -766,7 +766,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **🛠️ Native Python Function Calling**: Introducing native Python function calling within Open WebUI. We’ve also included a built-in code editor to seamlessly develop and integrate function code within the 'Tools' workspace. With this, you can significantly enhance your LLM’s capabilities by creating custom RAG pipelines, web search tools, and even agent-like features such as sending Discord messages.
+- **🛠️ Native Python Function Calling**: Introducing native Python function calling within DoctorAI. We’ve also included a built-in code editor to seamlessly develop and integrate function code within the 'Tools' workspace. With this, you can significantly enhance your LLM’s capabilities by creating custom RAG pipelines, web search tools, and even agent-like features such as sending Discord messages.
 - **🌐 DuckDuckGo Integration**: Added DuckDuckGo as a web search provider, giving you more search options.
 - **🌏 Enhanced Translations**: Improved translations for Vietnamese and Chinese languages, making the interface more accessible.
 
@@ -817,7 +817,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **📝 Prompt Input Clearing**: Resolved prompt input textarea not being cleared right away, ensuring a clean slate for new inputs.
 - **✨ Various UI Styling Issues**: Fixed numerous user interface styling problems for a more cohesive look.
 - **👥 Active Users Display**: Fixed active users showing active sessions instead of actual users, now reflecting accurate user activity.
-- **🌐 Community Platform Compatibility**: The Community Platform is back online and fully compatible with Open WebUI.
+- **🌐 Community Platform Compatibility**: The Community Platform is back online and fully compatible with DoctorAI.
 
 ### Changed
 
@@ -848,7 +848,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **👤 Improved Account Pending Page**: The account pending page now displays admin details by default to avoid confusion. You can disable this feature in the admin settings if needed.
 - **🌐 HTTP Proxy Support**: We have enabled the use of the 'http_proxy' environment variable in OpenAI and Ollama API calls, making it easier to configure network settings.
-- **❓ Quick Access to Documentation**: You can now easily access Open WebUI documents via a question mark button located at the bottom right corner of the screen (available on larger screens like PCs).
+- **❓ Quick Access to Documentation**: You can now easily access DoctorAI documents via a question mark button located at the bottom right corner of the screen (available on larger screens like PCs).
 - **🌍 Enhanced Translation**: Improvements have been made to translations.
 
 ### Fixed
@@ -874,7 +874,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **🌊 Mermaid Rendering Support**: We've included support for Mermaid rendering. This allows you to create beautiful diagrams and flowcharts directly within Open WebUI.
+- **🌊 Mermaid Rendering Support**: We've included support for Mermaid rendering. This allows you to create beautiful diagrams and flowcharts directly within DoctorAI.
 - **🔄 New Environment Variable 'RESET_CONFIG_ON_START'**: Introducing a new environment variable: 'RESET_CONFIG_ON_START'. Set this variable to reset your configuration settings upon starting the application, making it easier to revert to default settings.
 
 ### Fixed
@@ -902,7 +902,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **🔧 Pipelines Support**: Open WebUI now includes a plugin framework for enhanced customization and functionality (https://github.com/open-webui/pipelines). Easily add custom logic and integrate Python libraries, from AI agents to home automation APIs.
+- **🔧 Pipelines Support**: DoctorAI now includes a plugin framework for enhanced customization and functionality (https://teledocmedical.com/). Easily add custom logic and integrate Python libraries, from AI agents to home automation APIs.
 - **🔗 Function Calling via Pipelines**: Integrate function calling seamlessly through Pipelines.
 - **⚖️ User Rate Limiting via Pipelines**: Implement user-specific rate limits to manage API usage efficiently.
 - **📊 Usage Monitoring with Langfuse**: Track and analyze usage statistics with Langfuse integration through Pipelines.
@@ -966,7 +966,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **🔒 Auth Disable Option**: Introducing the ability to disable authentication. Set 'WEBUI_AUTH' to False to disable authentication. Note: Only applicable for fresh installations without existing users.
 - **📹 Enhanced YouTube RAG Pipeline**: Now supports non-English videos for an enriched experience.
 - **🔊 Specify OpenAI TTS Models**: Customize your TTS experience by specifying OpenAI TTS models.
-- **🔧 Additional Environment Variables**: Discover more environment variables in our comprehensive documentation at Open WebUI Documentation (https://docs.openwebui.com).
+- **🔧 Additional Environment Variables**: Discover more environment variables in our comprehensive documentation at DoctorAI Documentation (https://teledocmedical.com).
 - **🌐 Language Support**: Arabic, Finnish, and Hindi added; Improved support for German, Vietnamese, and Chinese.
 
 ### Fixed
@@ -977,7 +977,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **📝 Title Generation**: Limited output to 50 tokens.
-- **📦 Helm Charts**: Removed Helm charts, now available in a separate repository (https://github.com/open-webui/helm-charts).
+- **📦 Helm Charts**: Removed Helm charts, now available in a separate repository (https://teledocmedical.com).
 
 ## [0.1.123] - 2024-05-02
 
@@ -1016,7 +1016,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **🎨 Splash Screen**: Introducing a loading splash screen for a smoother user experience.
 - **🌍 Language Support Expansion**: Added support for Bangla (bn-BD), along with enhancements to Chinese, Spanish, and Ukrainian translations.
 - **💻 Improved LaTeX Rendering Performance**: Enjoy faster rendering times for LaTeX equations.
-- **🔧 More Environment Variables**: Explore additional environment variables in our documentation (https://docs.openwebui.com), including the 'ENABLE_LITELLM' option to manage memory usage.
+- **🔧 More Environment Variables**: Explore additional environment variables in our documentation (https://teledocmedical.com), including the 'ENABLE_LITELLM' option to manage memory usage.
 
 ### Fixed
 
@@ -1103,7 +1103,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - 🗨️ **Local Chat Sharing**: Share chat links seamlessly between users.
-- 🔑 **API Key Generation Support**: Generate secret keys to leverage Open WebUI with OpenAI libraries.
+- 🔑 **API Key Generation Support**: Generate secret keys to leverage DoctorAI with OpenAI libraries.
 - 📄 **Chat Download as PDF**: Easily download chats in PDF format.
 - 📝 **Improved Logging**: Enhancements to logging functionality.
 - 📧 **Trusted Email Authentication**: Authenticate using a trusted email header.
@@ -1320,10 +1320,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **🔗 Built-in LiteLLM Proxy**: Now includes LiteLLM proxy within Open WebUI for enhanced functionality.
+- **🔗 Built-in LiteLLM Proxy**: Now includes LiteLLM proxy within DoctorAI for enhanced functionality.
 
   - Easily integrate existing LiteLLM configurations using `-v /path/to/config.yaml:/app/backend/data/litellm/config.yaml` flag.
-  - When utilizing Docker container to run Open WebUI, ensure connections to localhost use `host.docker.internal`.
+  - When utilizing Docker container to run DoctorAI, ensure connections to localhost use `host.docker.internal`.
 
 - **🖼️ Image Generation Enhancements**: Introducing Advanced Settings with Image Preview Feature.
   - Customize image generation by setting the number of steps; defaults to A1111 value.
@@ -1334,8 +1334,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Ollama is no longer required to run Open WebUI.
-- Access our comprehensive documentation at [Open WebUI Documentation](https://docs.openwebui.com/).
+- Ollama is no longer required to run DoctorAI.
+- Access our comprehensive documentation at [DoctorAI Documentation](https://teledocmedical.com/).
 
 ## [0.1.102] - 2024-02-22
 
