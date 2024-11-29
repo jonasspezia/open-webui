@@ -114,9 +114,9 @@
 				/>
 			</a>
 
-			<a href="https://twitter.com/OpenWebUI" target="_blank">
+			<a href="https://www.youtube.com/@drjonasspezia" target="_blank">
 				<img
-					alt="Instagram"
+					alt="Youtube"
 					src="https://img.shields.io/badge/Instagram--blue%3Flogo%3Ddiscord%26logoColor%3Dwhite"
 				/>
 			</a>
@@ -136,7 +136,7 @@
 			{$i18n.t('Created by')}
 			<a
 				class=" text-gray-500 dark:text-gray-300 font-medium"
-				href="https://github.com/tjbck"
+				href="https://www.instagram.com/drjonasspezia"
 				target="_blank">Dr. Jonas Spezia | Teledoc Journey Medical</a
 			>
 		</div>
