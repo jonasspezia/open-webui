@@ -1,6 +1,6 @@
 # DoctorAI 👨‍⚕️🤖
 
-[![Teledoc]([[https://img.shields.io/badge/Discord-DoctorAI-blue?logo=discord&logoColor=white](https://i.postimg.cc/QCTzLfdH/wredccds.png](https://img.shields.io/badge/-Teledoc%20Journey%20Medical-blue))](https://teledocmedical.com)
+[Teledoc Journey Medical](https://teledocmedical.com/)
 
 O **DoctorAI** é uma inteligência artificial inovadora desenvolvida para médicos, dentistas, profissionais da saúde e acadêmicos. Nossa solução ajuda na pesquisa, economizando tempo e recursos, ao gerar e resumir evidências científicas com links de referência de bases confiáveis. Para mais informações, não deixe de conferir nossa [Documentação do DoctorAI](https://docs.teledocmedical.ai/).
 
