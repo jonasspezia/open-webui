@@ -1,1 +1,6 @@
 *.sh text eol=lf
+# Preservar alterações locais em arquivos e diretórios específicos
+src/lib/components/chat/Settings/About.svelte merge=ours
+static/favicon.png merge=ours
+static/static/** merge=ours
+README.md merge=ours
