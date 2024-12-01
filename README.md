@@ -96,7 +96,7 @@ Descubra os próximos recursos e planos em nosso roadmap disponível na [Documen
 
 ## Licença 📜
 
-Este projeto está licenciado sob a [Licença MIT](LICENSE) - veja o arquivo [LICENSE](LICENSE) para mais detalhes. 📄
+Este projeto está licenciado sob a [Licença Restritiva - v1.0](LICENSE) - veja o arquivo [LICENSE](LICENSE) para mais detalhes. 📄
 
 ## Suporte 💬
 
