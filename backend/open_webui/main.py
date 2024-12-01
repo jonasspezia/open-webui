@@ -1781,15 +1781,24 @@ async def generate_title(form_data: dict, user=Depends(get_verified_user)):
     if app.state.config.TITLE_GENERATION_PROMPT_TEMPLATE != "":
         template = app.state.config.TITLE_GENERATION_PROMPT_TEMPLATE
     else:
-        template = """Create a concise, 3-5 word title with an emoji as a title for the chat history, in the given language. Suitable Emojis for the summary can be used to enhance understanding but avoid quotation marks or special formatting. RESPOND ONLY WITH THE TITLE TEXT.
+        template = """Crie um título conciso de 3 a 5 palavras com um emoji como título para o histórico de bate-papo, no idioma determinado. Emojis adequados para o resumo podem ser usados ​​para melhorar a compreensão, mas evite aspas ou formatação especial. RESPONDA SOMENTE COM O TEXTO DO TÍTULO.
 
-Examples of titles:
-📉 Stock Market Trends
-🍪 Perfect Chocolate Chip Recipe
-Evolution of Music Streaming
-Remote Work Productivity Tips
-Artificial Intelligence in Healthcare
-🎮 Video Game Development Insights
+Exemplos de títulos:
+📊 Tendências em Doenças Crônicas
+💊 Novas Atualizações em Tratamentos Farmacológicos
+🩺 Protocolos de Diagnóstico Atualizados
+📚 Revisão de Estudos Clínicos Recentes
+🤖 Inteligência Artificial no Diagnóstico Médico
+🏥 Melhores Práticas para Consultórios Remotos
+🧬 Avanços em Genética e Medicina Personalizada
+📈 Estatísticas de Saúde Pública Atualizadas
+💉 Atualizações em Vacinas e Imunizações
+📋 Gestão de Pacientes e Prontuários Eletrônicos
+🧪 Novas Tecnologias em Equipamentos Médicos
+🌐 Telemedicina: Ferramentas e Estratégias Eficazes
+🔬 Inovações em Pesquisa Biomédica
+🕒 Otimização do Tempo em Rotinas Médicas
+🛡️ Segurança e Privacidade de Dados na Saúde
 
 <chat_history>
 {{MESSAGES:END:2}}
@@ -1878,14 +1887,14 @@ async def generate_chat_tags(form_data: dict, user=Depends(get_verified_user)):
         template = app.state.config.TAGS_GENERATION_PROMPT_TEMPLATE
     else:
         template = """### Task:
-Generate 1-3 broad tags categorizing the main themes of the chat history, along with 1-3 more specific subtopic tags.
+Gere de 1 a 3 tags amplas categorizando os temas principais do histórico de bate-papo, junto com 1 a 3 tags de subtópico mais específicas.
 
 ### Guidelines:
-- Start with high-level domains (e.g. Science, Technology, Philosophy, Arts, Politics, Business, Health, Sports, Entertainment, Education)
-- Consider including relevant subfields/subdomains if they are strongly represented throughout the conversation
-- If content is too short (less than 3 messages) or too diverse, use only ["General"]
-- Use the chat's primary language; default to English if multilingual
-- Prioritize accuracy over specificity
+- Comece com domínios de alto nível relacionados à área médica (por exemplo, Doenças, Tratamentos, Tecnologia, Diagnósticos, Saúde, Pesquisa, Medicina, Cuidados, Psicologia, Educação)
+- Considere incluir subcampos/subdomínios relevantes se eles forem fortemente representados ao longo da conversa
+- Se o conteúdo for muito curto (menos de 3 mensagens) ou muito diversificado, use apenas ["Geral"]
+- Use o idioma principal do chat; padrão para Português do Brasil se for multilíngue
+- Priorize precisão sobre especificidade
 
 ### Output:
 JSON format: { "tags": ["tag1", "tag2", "tag3"] }
