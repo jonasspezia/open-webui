@@ -1,44 +1,39 @@
-# Security Policy
+# Política de Segurança
 
-Our primary goal is to ensure the protection and confidentiality of sensitive data stored by users on open-webui.
+Nosso principal objetivo é garantir a proteção e confidencialidade dos dados sensíveis armazenados pelos usuários no DoctorAI.
 
-## Supported Versions
+## Versões Suportadas
 
-| Version | Supported          |
-| ------- | ------------------ |
-| main    | :white_check_mark: |
-| others  | :x:                |
+| Versão | Suportado |
+| ------ | --------- |
+| principal | :white_check_mark: |
+| outras | :x: |
 
-## Zero Tolerance for External Platforms
+## Tolerância Zero para Plataformas Externas
 
-Based on a precedent of an unacceptable degree of spamming and unsolicited communications from third-party platforms, we forcefully reaffirm our stance. **We refuse to engage with, join, or monitor any platforms outside of GitHub for vulnerability reporting.** Our reasons are not just procedural but are deep-seated in the ethos of our project, which champions transparency and direct community interaction inherent in the open-source culture. Any attempts to divert our processes to external platforms will be met with outright rejection. This policy is non-negotiable and understands no exceptions.
+Com base em precedentes de um grau inaceitável de spam e comunicações não solicitadas de plataformas terceiras, reafirmamos de forma contundente nossa posição. **Recusamos engajar, juntar ou monitorar qualquer plataforma fora do GitHub para a notificação de vulnerabilidades.** Nossas razões não são apenas procedimentais, mas estão profundamente enraizadas na ética do nosso projeto, que defende a transparência e a interação direta da comunidade inerentes à cultura de código aberto. Quaisquer tentativas de desviar nossos processos para plataformas externas serão rejeitadas de imediato. Esta política é inegociável e não admite exceções.
 
-Any reports or solicitations arriving from sources other than our designated GitHub repository will be dismissed without consideration. We’ve seen how external engagements can dilute and compromise the integrity of community-driven projects, and we’re not here to gamble with the security and privacy of our user community.
+Qualquer relatório ou solicitação proveniente de fontes que não sejam nosso repositório designado no GitHub será descartado sem consideração. Observamos como engajamentos externos podem diluir e comprometer a integridade de projetos impulsionados pela comunidade, e não estamos dispostos a arriscar a segurança e privacidade da nossa comunidade de usuários.
 
-## Reporting a Vulnerability
+## Relatório de Vulnerabilidade
 
-We appreciate the community's interest in identifying potential vulnerabilities. However, effective immediately, we will **not** accept low-effort vulnerability reports. To ensure that submissions are constructive and actionable, please adhere to the following guidelines:
+Agradecemos o interesse da comunidade em identificar potenciais vulnerabilidades. Contudo, a partir de agora, **não aceitaremos relatórios de vulnerabilidades de baixo esforço**. Para garantir que as submissões sejam construtivas e acionáveis, por favor, siga as seguintes diretrizes:
 
-Reports not submitted through our designated GitHub repository will be disregarded, and we will categorically reject invitations to collaborate on external platforms. Our aggressive stance on this matter underscores our commitment to a secure, transparent, and open community where all operations are visible and contributors are accountable.
+Relatórios que não forem submetidos através do nosso repositório designado no GitHub serão desconsiderados, e rejeitaremos categoricamente convites para colaborar em plataformas externas. Nossa postura agressiva sobre este assunto reforça nosso compromisso com uma comunidade segura, transparente e aberta, onde todas as operações são visíveis e os contribuintes são responsabilizados.
 
-1. **No Vague Reports**: Submissions such as "I found a vulnerability" without any details will be treated as spam and will not be accepted.
+1. **Nada de Relatórios Vagos**: Submissões como "Encontrei uma vulnerabilidade" sem quaisquer detalhes serão tratadas como spam e não serão aceitas.
+2. **Entendimento Profundo é Necessário**: Os relatórios devem refletir um entendimento claro da base de código e fornecer detalhes específicos sobre a vulnerabilidade, incluindo os componentes afetados e os impactos potenciais.
+3. **Prova de Conceito (PoC) é Obrigatória**: Cada submissão deve incluir uma prova de conceito (PoC) bem documentada que demonstre a vulnerabilidade. Se a confidencialidade for uma preocupação, os reportantes são encorajados a criar um fork privado do repositório e compartilhar o acesso com os mantenedores. Relatórios sem evidências válidas serão desconsiderados.
+4. **Submissão de Patch Necessária**: Juntamente com a PoC, os reportantes devem fornecer um patch ou etapas acionáveis para remediar a vulnerabilidade identificada. Isso nos ajuda a avaliar e implementar correções rapidamente.
+5. **Processo de Integração Simplificado**: Quando os relatórios de vulnerabilidade atendem aos critérios acima, podemos considerá-los para integração imediata, similar aos pull requests regulares. Submissões bem estruturadas e completas acelerarão o processo de aprimoramento de nossa segurança.
 
-2. **In-Depth Understanding Required**: Reports must reflect a clear understanding of the codebase and provide specific details about the vulnerability, including the affected components and potential impacts.
+**Submissões não conformes serão fechadas, e infratores reincidentes poderão ser banidos.** Nosso objetivo é fomentar um ambiente de relato construtivo onde submissões de qualidade promovam melhor segurança para todos os usuários.
 
-3. **Proof of Concept (PoC) is Mandatory**: Each submission must include a well-documented proof of concept (PoC) that demonstrates the vulnerability. If confidentiality is a concern, reporters are encouraged to create a private fork of the repository and share access with the maintainers. Reports lacking valid evidence will be disregarded.
+## Segurança do Produto
 
-4. **Required Patch Submission**: Along with the PoC, reporters must provide a patch or actionable steps to remediate the identified vulnerability. This helps us evaluate and implement fixes rapidly.
+Realizamos auditorias regulares em nossos processos internos e na arquitetura do sistema em busca de vulnerabilidades, utilizando uma combinação de técnicas de teste automatizadas e manuais. Também estamos planejando implementar varreduras SAST (Static Application Security Testing) e SCA (Software Composition Analysis) em nosso projeto em breve.
 
-5. **Streamlined Merging Process**: When vulnerability reports meet the above criteria, we can consider them for immediate merging, similar to regular pull requests. Well-structured and thorough submissions will expedite the process of enhancing our security.
-
-**Non-compliant submissions will be closed, and repeat violators may be banned.** Our goal is to foster a constructive reporting environment where quality submissions promote better security for all users.
-
-## Product Security
-
-We regularly audit our internal processes and system architecture for vulnerabilities using a combination of automated and manual testing techniques. We are also planning to implement SAST and SCA scans in our project soon.
-
-For immediate concerns or detailed reports that meet our guidelines, please create an issue in our [issue tracker](/open-webui/open-webui/issues) or contact us on [Discord](https://discord.gg/5rJgQTnV4s).
+Para preocupações imediatas ou relatórios detalhados que atendam às nossas diretrizes, por favor, crie uma issue em nosso [rastreador de issues](https://github.com/teledoc-journey-medical/DoctorAI/issues) ou entre em contato conosco no [Discord](https://discord.gg/5rJgQTnV4s).
 
 ---
-
-_Last updated on **2024-08-19**._
+_Última atualização em_ **_2024-08-19_**_._
