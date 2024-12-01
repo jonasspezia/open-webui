@@ -107,46 +107,46 @@ DEFAULT_CONFIG = {
         "prompt_suggestions": [
             {
                 "title": [
-                    "Help me study",
-                    "vocabulary for a college entrance exam",
+                    "Ajude-me a estudar",
+                    "vocabulário para a prova de anatomia",
                 ],
-                "content": "Help me study vocabulary: write a sentence for me to fill in the blank, and I'll try to pick the correct option.",
+                "content": "Ajude-me a estudar vocabulário: escreva uma frase para eu preencher a lacuna e tentarei escolher a opção correta.",
             },
             {
                 "title": [
-                    "Give me ideas",
-                    "for what to do with my kids' art",
+                    "Me dê ideias",
+                    "para saber o que fazer com a dificuldade de estudar bioquímica",
                 ],
-                "content": "What are 5 creative things I could do with my kids' art? I don't want to throw them away, but it's also so much clutter.",
+                "content": "Quais são as 5 coisas criativas que eu poderia fazer para estudar bioquímica? Não quero somente ter alto desempenho, mas também organizar o conhecimento.",
             },
             {
-                "title": ["Tell me a fun fact", "about the Roman Empire"],
-                "content": "Tell me a random fun fact about the Roman Empire",
+                "title": ["Conte-me uma curiosidade", "sobre a Medicina Medieval"],
+                "content": "Conte-me uma curiosidade aleatória sobre a Medicina na Idade Média",
             },
             {
                 "title": [
-                    "Show me a code snippet",
-                    "of a website's sticky header",
+                    "Mostre-me um roteiro de cirurgia geral completo",
+                    "do apendicectomia",
                 ],
-                "content": "Show me a code snippet of a website's sticky header in CSS and JavaScript.",
+                "content": "mostre-me um roteiro de intubação orotraqueal(IOT) de paciente em sala vermelha de um hospital com poucos recursos disponíveis",
             },
             {
                 "title": [
-                    "Explain options trading",
-                    "if I'm familiar with buying and selling stocks",
+                    "Explique a exerese de lipoma em região dorsal",
+                    "se estou familiarizado com técnica cirúrgica",
                 ],
-                "content": "Explain options trading in simple terms if I'm familiar with buying and selling stocks.",
+                "content": "Explique a técnica de exerese de lipomas em termos profissionais médicos se eu estiver familiarizado com a técnica cirúrgica",
             },
             {
-                "title": ["Overcome procrastination", "give me tips"],
-                "content": "Could you start by asking me about instances when I procrastinate the most and then give me some suggestions to overcome it?",
+                "title": ["Superar a procrastinação", "me dê técnicas validadas"],
+                "content": "Você poderia começar me perguntando sobre os casos em que procrastino mais e depois me dar algumas técnicas validadas para superar isso?",
             },
             {
                 "title": [
-                    "Grammar check",
-                    "rewrite it for better readability ",
+                    "Verificação gramatical de instruções ao paciente",
+                    "reescreva-o para melhor legibilidade conforme grau de conhecimento do paciente",
                 ],
-                "content": 'Check the following sentence for grammar and clarity: "[sentence]". Rewrite it for better readability while maintaining its original meaning.',
+                "content": 'Verifique a seguinte orientação quanto à gramática e clareza: "[frase]". Reescreva-o para melhor legibilidade, mantendo seu significado original.',
             },
         ],
     },
@@ -717,31 +717,31 @@ DEFAULT_PROMPT_SUGGESTIONS = PersistentConfig(
     "ui.prompt_suggestions",
     [
         {
-            "title": ["Help me study", "vocabulary for a college entrance exam"],
-            "content": "Help me study vocabulary: write a sentence for me to fill in the blank, and I'll try to pick the correct option.",
+            "title": ["Ajude-me a estudar inglês", "inglês para viajar aos EUA"],
+            "content": "Ajude-me a estudar vocabulário inglês: escreva uma frase para eu preencher a lacuna e tentarei escolher a opção correta.",
         },
         {
-            "title": ["Give me ideas", "for what to do with my kids' art"],
-            "content": "What are 5 creative things I could do with my kids' art? I don't want to throw them away, but it's also so much clutter.",
+            "title": ["Me dê os principais frameworks validados", "para saber a gerir o meu consultório"],
+            "content": "Quais são as 5 coisas que eu poderia fazer para obter um grande impacto gestacional do meu consultório? Não quero perder tempo com coisas pouco relevantes, mas preciso fazer as 5 coisas que geram o maior resultado efetivo.",
         },
         {
-            "title": ["Tell me a fun fact", "about the Roman Empire"],
-            "content": "Tell me a random fun fact about the Roman Empire",
+            "title": ["Conte-me as atualizações mais relevantes da medicina", "dos último 30 dias"],
+            "content": "Conte-me as atualizações sobre cardiologia",
         },
         {
-            "title": ["Show me a code snippet", "of a website's sticky header"],
-            "content": "Show me a code snippet of a website's sticky header in CSS and JavaScript.",
+            "title": ["Mostre-me um trecho de artigo científico", "do PubMed"],
+            "content": "Mostre-me um trecho de artigo científico do PubMed de insulinoterapia",
         },
         {
             "title": [
-                "Explain options trading",
-                "if I'm familiar with buying and selling stocks",
+                "Explique o mecanisco do tratamento da asma",
+                "se estou familiarizado com fisiologia e farmacologia",
             ],
-            "content": "Explain options trading in simple terms if I'm familiar with buying and selling stocks.",
+            "content": "Explique o mecanismo do tratamento da asma em termos médicos e mais objetivos se eu estiver familiarizado com a fisilogia humana e farmacologia",
         },
         {
-            "title": ["Overcome procrastination", "give me tips"],
-            "content": "Could you start by asking me about instances when I procrastinate the most and then give me some suggestions to overcome it?",
+            "title": ["Orientar o paciente", "me dê técnicas validadas"],
+            "content": "Você poderia começar me perguntando sobre os casos em que necessito orientar meus pacientes e depois me dar técnicas validadas como sugestões para orientar adequadamente e no final as orientações prontas para enviar ao meu paciente?",
         },
     ],
 )
