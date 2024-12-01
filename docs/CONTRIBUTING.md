@@ -1,73 +1,52 @@
-# Contributing to Open WebUI
+# Contribuindo para DoctorAI
+🚀 **Bem-vindo, Contribuidores!** 🚀  
+Agradecemos profundamente o seu interesse em contribuir para o DoctorAI. Este documento está aqui para guiá-lo através do processo, garantindo que suas contribuições aprimorem o projeto de maneira eficaz. Vamos tornar o DoctorAI ainda melhor, juntos!
 
-🚀 **Welcome, Contributors!** 🚀
+## 📌 Pontos Principais
+### 🧑‍⚕️ DoctorAI vs. Tecnologia Base
+É crucial distinguir entre DoctorAI e as tecnologias que a suportam:
+- **DoctorAI** foca em fornecer uma interface intuitiva e responsiva para interações médicas.
+- As **Tecnologias Base** (como IA e plataformas de telemedicina) são os fundamentos que alimentam essas interações.
+Se sua questão ou contribuição refere-se diretamente à tecnologia subjacente, por favor direcione-a para o repositório apropriado. O repositório do DoctorAI está dedicado apenas ao aspecto da interface do usuário.
 
-Your interest in contributing to Open WebUI is greatly appreciated. This document is here to guide you through the process, ensuring your contributions enhance the project effectively. Let's make Open WebUI even better, together!
-
-## 📌 Key Points
-
-### 🦙 Ollama vs. Open WebUI
-
-It's crucial to distinguish between Ollama and Open WebUI:
-
-- **Open WebUI** focuses on providing an intuitive and responsive web interface for chat interactions.
-- **Ollama** is the underlying technology that powers these interactions.
-
-If your issue or contribution pertains directly to the core Ollama technology, please direct it to the appropriate [Ollama project repository](https://ollama.com/). Open WebUI's repository is dedicated to the web interface aspect only.
-
-### 🚨 Reporting Issues
-
-Noticed something off? Have an idea? Check our [Issues tab](https://github.com/open-webui/open-webui/issues) to see if it's already been reported or suggested. If not, feel free to open a new issue. When reporting an issue, please follow our issue templates. These templates are designed to ensure that all necessary details are provided from the start, enabling us to address your concerns more efficiently.
+### 🚨 Relatando Problemas
+Percebeu algo incorreto? Tem uma ideia? Verifique nossa [aba de Issues](https://github.com/teledoc-journey-medical/DoctorAI/issues) para ver se já foi reportado ou sugerido. Caso contrário, sinta-se à vontade para abrir uma nova issue. Ao reportar um problema, por favor siga nossos templates de issue. Esses templates são projetados para garantir que todos os detalhes necessários sejam fornecidos desde o início, permitindo que abordemos suas preocupações de forma mais eficiente.
 
 > [!IMPORTANT]
 >
-> - **Template Compliance:** Please be aware that failure to follow the provided issue template, or not providing the requested information at all, will likely result in your issue being closed without further consideration. This approach is critical for maintaining the manageability and integrity of issue tracking.
-> - **Detail is Key:** To ensure your issue is understood and can be effectively addressed, it's imperative to include comprehensive details. Descriptions should be clear, including steps to reproduce, expected outcomes, and actual results. Lack of sufficient detail may hinder our ability to resolve your issue.
+> - **Conformidade com o Template:** Esteja ciente de que a não utilização do template fornecido, ou a não inclusão das informações solicitadas, provavelmente resultará no fechamento da sua issue sem consideração adicional. Essa abordagem é essencial para manter a gerenciabilidade e integridade do rastreamento de issues.
+> - **Detalhamento é Fundamental:** Para garantir que sua issue seja entendida e possa ser efetivamente resolvida, é imperativo incluir detalhes abrangentes. As descrições devem ser claras, incluindo passos para reproduzir, resultados esperados e resultados atuais. A falta de detalhes suficientes pode dificultar nossa capacidade de resolver seu problema.
 
-### 🧭 Scope of Support
+### 🧭 Escopo de Suporte
+Notamos um aumento nas issues que não estão diretamente relacionadas ao DoctorAI, mas sim ao ambiente em que ele é executado, especialmente configurações de Docker. Embora nos esforcemos para suportar a implantação com Docker, entender os fundamentos do Docker é crucial para uma experiência tranquila.
+- **Suporte à Implantação com Docker**: DoctorAI suporta implantação via Docker. Assume-se familiaridade com Docker. Para noções básicas de Docker, por favor, consulte a [documentação oficial do Docker](https://docs.docker.com/get-started/overview/).
+- **Configurações Avançadas**: Configurar proxies reversos para HTTPS e gerenciar implantações com Docker requer conhecimento fundamental. Existem inúmeros recursos online disponíveis para aprender essas habilidades. Garantir que você possui esse conhecimento aprimorará grandemente sua experiência com o DoctorAI e projetos semelhantes.
 
-We've noticed an uptick in issues not directly related to Open WebUI but rather to the environment it's run in, especially Docker setups. While we strive to support Docker deployment, understanding Docker fundamentals is crucial for a smooth experience.
-
-- **Docker Deployment Support**: Open WebUI supports Docker deployment. Familiarity with Docker is assumed. For Docker basics, please refer to the [official Docker documentation](https://docs.docker.com/get-started/overview/).
-
-- **Advanced Configurations**: Setting up reverse proxies for HTTPS and managing Docker deployments requires foundational knowledge. There are numerous online resources available to learn these skills. Ensuring you have this knowledge will greatly enhance your experience with Open WebUI and similar projects.
-
-## 💡 Contributing
-
-Looking to contribute? Great! Here's how you can help:
+## 💡 Contribuindo
+Deseja contribuir? Ótimo! Veja como você pode ajudar:
 
 ### 🛠 Pull Requests
+Recebemos com entusiasmo pull requests. Antes de submeter uma, por favor:
+1. Abra uma discussão sobre suas ideias [aqui](https://github.com/teledoc-journey-medical/DoctorAI/discussions/new/choose).
+2. Siga os padrões de codificação do projeto e inclua testes para novas funcionalidades.
+3. Atualize a documentação conforme necessário.
+4. Escreva mensagens de commit claras e descritivas.
+5. É essencial completar seu pull request de maneira oportuna. Nós trabalhamos rapidamente, e ter PRs pendentes por muito tempo não é viável. Se você não conseguir finalizar dentro de um prazo razoável, poderemos fechá-lo para manter o projeto avançando.
 
-We welcome pull requests. Before submitting one, please:
+### 📚 Documentação & Tutoriais
+Ajude-nos a tornar o DoctorAI mais acessível melhorando a documentação, escrevendo tutoriais ou criando guias sobre como configurar e otimizar a interface do usuário.
 
-1. Open a discussion regarding your ideas [here](https://github.com/open-webui/open-webui/discussions/new/choose).
-2. Follow the project's coding standards and include tests for new features.
-3. Update documentation as necessary.
-4. Write clear, descriptive commit messages.
-5. It's essential to complete your pull request in a timely manner. We move fast, and having PRs hang around too long is not feasible. If you can't get it done within a reasonable time frame, we may have to close it to keep the project moving forward.
+### 🌐 Traduções e Internacionalização
+Ajude-nos a disponibilizar o DoctorAI para um público mais amplo. Nesta seção, orientaremos você através do processo de adicionar novas traduções ao projeto.
+Usamos arquivos JSON para armazenar traduções. Você pode encontrar os arquivos de tradução existentes no diretório `src/lib/i18n/locales`. Cada diretório corresponde a um idioma específico, por exemplo, `pt-BR` para Português (Brasil), `es-ES` para Espanhol (Espanha) e assim por diante. Você pode referir-se aos [Códigos de Idioma ISO 639](http://www.lingoes.net/en/translator/langcode.htm) para encontrar o código apropriado para um idioma específico.
+Para adicionar um novo idioma:
+- Crie um novo diretório no caminho `src/lib/i18n/locales` com o código de idioma apropriado como nome. Por exemplo, se você está adicionando traduções para Português (Portugal), crie um novo diretório chamado `pt-PT`.
+- Copie os arquivos de tradução em inglês americano (do diretório `en-US` em `src/lib/i18n/locales`) para este novo diretório e atualize os valores das strings no formato JSON de acordo com o seu idioma. Certifique-se de preservar a estrutura do objeto JSON.
+- Adicione o código do idioma e seu respectivo título ao arquivo de idiomas em `src/lib/i18n/locales/languages.json`.
 
-### 📚 Documentation & Tutorials
+### 🤔 Perguntas & Feedback
+Tem perguntas ou feedback? Junte-se à nossa [comunidade no Discord](https://discord.gg/5rJgQTnV4s) ou abra uma issue. Estamos aqui para ajudar!
 
-Help us make Open WebUI more accessible by improving documentation, writing tutorials, or creating guides on setting up and optimizing the web UI.
-
-### 🌐 Translations and Internationalization
-
-Help us make Open WebUI available to a wider audience. In this section, we'll guide you through the process of adding new translations to the project.
-
-We use JSON files to store translations. You can find the existing translation files in the `src/lib/i18n/locales` directory. Each directory corresponds to a specific language, for example, `en-US` for English (US), `fr-FR` for French (France) and so on. You can refer to [ISO 639 Language Codes](http://www.lingoes.net/en/translator/langcode.htm) to find the appropriate code for a specific language.
-
-To add a new language:
-
-- Create a new directory in the `src/lib/i18n/locales` path with the appropriate language code as its name. For instance, if you're adding translations for Spanish (Spain), create a new directory named `es-ES`.
-- Copy the American English translation file(s) (from `en-US` directory in `src/lib/i18n/locale`) to this new directory and update the string values in JSON format according to your language. Make sure to preserve the structure of the JSON object.
-- Add the language code and its respective title to languages file at `src/lib/i18n/locales/languages.json`.
-
-### 🤔 Questions & Feedback
-
-Got questions or feedback? Join our [Discord community](https://discord.gg/5rJgQTnV4s) or open an issue. We're here to help!
-
-## 🙏 Thank You!
-
-Your contributions, big or small, make a significant impact on Open WebUI. We're excited to see what you bring to the project!
-
-Together, let's create an even more powerful tool for the community. 🌟
+## 🙏 Obrigado!
+Suas contribuições, grandes ou pequenas, têm um impacto significativo no DoctorAI. Estamos entusiasmados para ver o que você trará para o projeto!
+Juntos, vamos criar uma ferramenta ainda mais poderosa para a comunidade médica. 🌟
