@@ -1,21 +1,40 @@
-MIT License
+Licença Restritiva - v1.0  
+Copyright (c) 2024 Dr. Jonas Spezia | Teledoc Journey Medical 
 
-Copyright (c) 2023 Timothy Jaeryang Baek
+Permissão é concedida, gratuitamente, apenas para indivíduos ou organizações autorizados que tenham obtido consentimento expresso e por escrito do detentor dos direitos autorais para usar uma cópia deste software e arquivos de documentação associados (o "Software"). Indivíduos ou organizações autorizados podem utilizar, copiar, modificar ou distribuir o Software apenas sob as seguintes condições e limitações:
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. **Autorização Limitada**:  
+   - O uso, modificação ou distribuição do Software está restrito a finalidades **não comerciais**, salvo consentimento expresso e por escrito do detentor dos direitos autorais.  
+   - O uso comercial, redistribuição ou sublicenciamento do Software é **estritamente proibido** sem acordo prévio por escrito com o detentor dos direitos autorais.  
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+2. **Proibição de Transferência de Direitos**:  
+   - Esta licença é **intransferível**. Qualquer tentativa de transferir, sublicenciar ou vender os direitos concedidos sob esta licença, sem o consentimento expresso e por escrito do detentor dos direitos autorais, será considerada nula e inválida.  
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+3. **Atribuição**:  
+   - O aviso de copyright (notificação de direitos autorais), este aviso de licença e a referência explícita ao autor original devem estar incluídos em todas as cópias, porções substanciais ou trabalhos derivados do Software.
+
+4. **Usos Proibidos**:  
+   - É **estritamente proibido** utilizar o Software de forma a causar danos, violar leis ou infringir os direitos de indivíduos ou organizações.  
+   - O Software não pode ser integrado ou utilizado para desenvolver sistemas relacionados à vigilância, militarismo ou quaisquer outros fins antiéticos, conforme determinado pelo detentor dos direitos autorais.
+
+5. **Trabalhos Derivados**:  
+   - Qualquer modificação ou trabalho derivado do Software deve receber **aprovação por escrito** do detentor dos direitos autorais antes de sua criação ou distribuição.  
+
+6. **Rescisão**:  
+   - A licença será automaticamente **rescindida** caso ocorra qualquer uso não autorizado, quebra dos termos ou violação do acordo. Após a rescisão, todo uso do Software deve cessar, e todas as cópias (modificadas ou não) devem ser destruídas.
+
+7. **Isenção de Garantias e Responsabilidade**:  
+   - O SOFTWARE É FORNECIDO "NO ESTADO EM QUE SE ENCONTRA" (AS IS), SEM QUALQUER GARANTIA, SEJA EXPRESSA OU IMPLÍCITA, INCLUINDO, MAS NÃO SE LIMITANDO A GARANTIAS DE COMERCIABILIDADE, ADEQUAÇÃO A UM PROPÓSITO ESPECÍFICO E NÃO VIOLAÇÃO.  
+   - EM NENHUMA CIRCUNSTÂNCIA OS AUTORES OU DETENTORES DOS DIREITOS AUTORAIS SERÃO RESPONSABILIZADOS POR QUALQUER RECLAMAÇÃO, DANO OU OUTRA RESPONSABILIDADE, SEJA EM UM CONTRATO, ATO ILÍCITO OU DE OUTRA FORMA, DECORRENTE DE, OU RELACIONADA AO SOFTWARE OU AO USO OU OUTRAS INTERAÇÕES COM O SOFTWARE, INCLUINDO USOS NÃO AUTORIZADOS OU INDEVIDOS.
+
+8. **Jurisdição**:  
+   - Qualquer disputa decorrente deste acordo de licença deverá ser resolvida exclusivamente sob a jurisdição especificada pelo detentor dos direitos autorais.
+
+---
+
+**Concessão de Direitos**:  
+Pedidos para obter permissão para usos específicos, uso comercial ou funcionalidades estendidas devem ser submetidos por escrito ao detentor dos direitos autorais. O detentor da licença reserva-se o direito de negar qualquer permissão ou modificar os termos a qualquer momento.
+
+---
+
+_Última Atualização: Dezembro de 2024
