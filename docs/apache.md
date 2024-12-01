@@ -1,166 +1,162 @@
-# Hosting UI and Models separately
+```markdown
+# Hospedagem Separada da Interface do Usuário (UI) e Modelos no DoctorAI
 
-Sometimes, its beneficial to host Ollama, separate from the UI, but retain the RAG and RBAC support features shared across users:
+Às vezes, é benéfico hospedar o DoctorAI separadamente da interface do usuário (UI), mas manter os recursos de suporte RAG e RBAC compartilhados entre os usuários:
 
-# Open WebUI Configuration
+## Configuração do DoctorAI
 
-## UI Configuration
+### Configuração da UI
 
-For the UI configuration, you can set up the Apache VirtualHost as follows:
+Para a configuração da UI, você pode configurar o Apache VirtualHost da seguinte maneira:
 
-```
-# Assuming you have a website hosting this UI at "server.com"
+```apache
+# Supondo que você hospede esta UI em "server.com"
 <VirtualHost 192.168.1.100:80>
     ServerName server.com
     DocumentRoot /home/server/public_html
-
     ProxyPass / http://server.com:3000/ nocanon
     ProxyPassReverse / http://server.com:3000/
-
 </VirtualHost>
 ```
 
-Enable the site first before you can request SSL:
+Habilite o site primeiro antes de solicitar o SSL:
+`a2ensite server.com.conf` # isso irá habilitar o site. a2ensite é a abreviação de "Apache 2 Enable Site"
 
-`a2ensite server.com.conf` # this will enable the site. a2ensite is short for "Apache 2 Enable Site"
-
-```
-# For SSL
+```apache
+# Para SSL
 <VirtualHost 192.168.1.100:443>
     ServerName server.com
     DocumentRoot /home/server/public_html
-
     ProxyPass / http://server.com:3000/ nocanon
     ProxyPassReverse / http://server.com:3000/
-
     SSLEngine on
     SSLCertificateFile /etc/ssl/virtualmin/170514456861234/ssl.cert
     SSLCertificateKeyFile /etc/ssl/virtualmin/170514456861234/ssl.key
     SSLProtocol all -SSLv2 -SSLv3 -TLSv1 -TLSv1.1
-
     SSLProxyEngine on
     SSLCACertificateFile /etc/ssl/virtualmin/170514456865864/ssl.ca
 </VirtualHost>
-
 ```
 
-I'm using virtualmin here for my SSL clusters, but you can also use certbot directly or your preferred SSL method. To use SSL:
+Estou usando o Virtualmin aqui para meus clusters de SSL, mas você também pode usar o Certbot diretamente ou seu método preferido de SSL. Para usar SSL:
 
-### Prerequisites.
+### Pré-requisitos
 
-Run the following commands:
+Execute os seguintes comandos:
+```bash
+snap install certbot --classic
+snap apt install python3-certbot-apache   # isso instalará o plugin do Apache.
+```
 
-`snap install certbot --classic`
-`snap apt install python3-certbot-apache` (this will install the apache plugin).
+Navegue até o diretório `sites-available` do Apache:
+```bash
+cd /etc/apache2/sites-available/
+```
 
-Navigate to the apache sites-available directory:
+Crie `server.com.conf` se ainda não estiver criado, contendo a configuração `<VirtualHost>` acima (deve corresponder ao seu caso. Modifique conforme necessário). Use a configuração sem o SSL:
 
-`cd /etc/apache2/sites-available/`
+Uma vez criado, execute `certbot --apache -d server.com`, isso solicitará e criará chaves SSL para você, além de criar o `server.com.le-ssl.conf`.
 
-Create server.com.conf if it is not yet already created, containing the above `<virtualhost>` configuration (it should match your case. Modify as necessary). Use the one without the SSL:
+# Configuração do Servidor DoctorAI
 
-Once it's created, run `certbot --apache -d server.com`, this will request and add/create an SSL keys for you as well as create the server.com.le-ssl.conf
-
-# Configuring Ollama Server
-
-On your latest installation of Ollama, make sure that you have setup your api server from the official Ollama reference:
-
-[Ollama FAQ](https://github.com/jmorganca/ollama/blob/main/docs/faq.md)
+Na sua instalação mais recente do DoctorAI, certifique-se de que configurou seu servidor API a partir da referência oficial do DoctorAI:
+[FAQ do DoctorAI](https://github.com/teledoc-journey-medical/DoctorAI/blob/main/docs/faq.md)
 
 ### TL;DR
 
-The guide doesn't seem to match the current updated service file on linux. So, we will address it here:
+O guia não parece corresponder ao arquivo de serviço atualizado atual no Linux. Portanto, abordaremos aqui:
 
-Unless when you're compiling Ollama from source, installing with the standard install `curl https://ollama.com/install.sh | sh` creates a file called `ollama.service` in /etc/systemd/system. You can use nano to edit the file:
+A menos que você esteja compilando o DoctorAI a partir do código-fonte, a instalação padrão `curl https://doctorai.com/install.sh | sh` cria um arquivo chamado `doctorai.service` em `/etc/systemd/system`. Você pode usar o nano para editar o arquivo:
 
-```
-sudo nano /etc/systemd/system/ollama.service
-```
-
-Add the following lines:
-
-```
-Environment="OLLAMA_HOST=0.0.0.0:11434" # this line is mandatory. You can also specify
+```bash
+sudo nano /etc/systemd/system/doctorai.service
 ```
 
-For instance:
+Adicione as seguintes linhas:
 
+```ini
+Environment="DOCTORAI_HOST=0.0.0.0:11434"  # esta linha é obrigatória. Você também pode especificar
 ```
+
+Por exemplo:
+
+```ini
 [Unit]
-Description=Ollama Service
+Description=DoctorAI Service
 After=network-online.target
 
 [Service]
-ExecStart=/usr/local/bin/ollama serve
-Environment="OLLAMA_HOST=0.0.0.0:11434" # this line is mandatory. You can also specify 192.168.254.109:DIFFERENT_PORT, format
-Environment="OLLAMA_ORIGINS=http://192.168.254.106:11434,https://models.server.city" # this line is optional
-User=ollama
-Group=ollama
+ExecStart=/usr/local/bin/doctorai serve
+Environment="DOCTORAI_HOST=0.0.0.0:11434"  # esta linha é obrigatória. Você também pode especificar 192.168.254.109:PORTA_DIFERENTE, formato
+Environment="DOCTORAI_ORIGINS=http://192.168.254.106:11434,https://models.server.city"  # esta linha é opcional
+User=doctorai
+Group=doctorai
 Restart=always
 RestartSec=3
-Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/s>
-
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/s">
+    
 [Install]
 WantedBy=default.target
 ```
 
-Save the file by pressing CTRL+S, then press CTRL+X
+Salve o arquivo pressionando `CTRL+S` e depois `CTRL+X`.
 
-When your computer restarts, the Ollama server will now be listening on the IP:PORT you specified, in this case 0.0.0.0:11434, or 192.168.254.106:11434 (whatever your local IP address is). Make sure that your router is correctly configured to serve pages from that local IP by forwarding 11434 to your local IP server.
+Quando o computador reiniciar, o servidor DoctorAI estará ouvindo no IP:PORTA que você especificou, neste caso, `0.0.0.0:11434` ou `192.168.254.106:11434` (qualquer que seja o seu endereço IP local). Certifique-se de que seu roteador está configurado corretamente para servir páginas a partir desse IP local encaminhando a porta `11434` para o servidor IP local.
 
-# Ollama Model Configuration
+# Configuração do Modelo DoctorAI
 
-## For the Ollama model configuration, use the following Apache VirtualHost setup:
+## Para a configuração do modelo DoctorAI, use a seguinte configuração do Apache VirtualHost:
 
-Navigate to the apache sites-available directory:
-
-`cd /etc/apache2/sites-available/`
-
-`nano models.server.city.conf` # match this with your ollama server domain
-
-Add the following virtualhost containing this example (modify as needed):
-
+Navegue até o diretório `sites-available` do Apache:
+```bash
+cd /etc/apache2/sites-available/
 ```
 
-# Assuming you have a website hosting this UI at "models.server.city"
+```bash
+nano models.server.city.conf   # ajuste isso com o domínio do seu servidor DoctorAI
+```
+
+Adicione o seguinte VirtualHost contendo este exemplo (modifique conforme necessário):
+
+```apache
+# Supondo que você hospede esta UI em "models.server.city"
 <IfModule mod_ssl.c>
-    <VirtualHost 192.168.254.109:443>
-        DocumentRoot "/var/www/html/"
-        ServerName models.server.city
-        <Directory "/var/www/html/">
-            Options None
-            Require all granted
-        </Directory>
-
-        ProxyRequests Off
-        ProxyPreserveHost On
-        ProxyAddHeaders On
-        SSLProxyEngine on
-
-        ProxyPass / http://server.city:1000/ nocanon # or port 11434
-        ProxyPassReverse / http://server.city:1000/ # or port 11434
-
-        SSLCertificateFile /etc/letsencrypt/live/models.server.city/fullchain.pem
-        SSLCertificateKeyFile /etc/letsencrypt/live/models.server.city/privkey.pem
-        Include /etc/letsencrypt/options-ssl-apache.conf
-    </VirtualHost>
+<VirtualHost 192.168.254.109:443>
+    DocumentRoot "/var/www/html/"
+    ServerName models.server.city
+    <Directory "/var/www/html/">
+        Options None
+        Require all granted
+    </Directory>
+    ProxyRequests Off
+    ProxyPreserveHost On
+    ProxyAddHeaders On
+    SSLProxyEngine on
+    ProxyPass / http://server.city:1000/ nocanon   # ou porta 11434
+    ProxyPassReverse / http://server.city:1000/      # ou porta 11434
+    SSLCertificateFile /etc/letsencrypt/live/models.server.city/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/models.server.city/privkey.pem
+    Include /etc/letsencrypt/options-ssl-apache.conf
+</VirtualHost>
 </IfModule>
 ```
 
-You may need to enable the site first (if you haven't done so yet) before you can request SSL:
-
+Você pode precisar habilitar o site primeiro (se ainda não o fez) antes de solicitar o SSL:
 `a2ensite models.server.city.conf`
 
-#### For the SSL part of Ollama server
+#### Para a parte SSL do servidor DoctorAI
 
-Run the following commands:
-
-Navigate to the apache sites-available directory:
-
-`cd /etc/apache2/sites-available/`
-`certbot --apache -d server.com`
-
+Execute os seguintes comandos:
+Navegue até o diretório `sites-available` do Apache:
+```bash
+cd /etc/apache2/sites-available/
 ```
+
+```bash
+certbot --apache -d server.com
+```
+
+```apache
 <VirtualHost 192.168.254.109:80>
     DocumentRoot "/var/www/html/"
     ServerName models.server.city
@@ -168,32 +164,32 @@ Navigate to the apache sites-available directory:
         Options None
         Require all granted
     </Directory>
-
     ProxyRequests Off
     ProxyPreserveHost On
     ProxyAddHeaders On
     SSLProxyEngine on
-
-    ProxyPass / http://server.city:1000/ nocanon # or port 11434
-    ProxyPassReverse / http://server.city:1000/ # or port 11434
-
+    ProxyPass / http://server.city:1000/ nocanon   # ou porta 11434
+    ProxyPassReverse / http://server.city:1000/      # ou porta 11434
     RewriteEngine on
     RewriteCond %{SERVER_NAME} =models.server.city
     RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
 </VirtualHost>
-
 ```
 
-Don't forget to restart/reload Apache with `systemctl reload apache2`
+Não se esqueça de reiniciar/recarregar o Apache com:
+```bash
+systemctl reload apache2
+```
 
-Open your site at https://server.com!
+Abra seu site em [https://server.com](https://server.com)!
 
-**Congratulations**, your _**Open-AI-like Chat-GPT style UI**_ is now serving AI with RAG, RBAC and multimodal features! Download Ollama models if you haven't yet done so!
+**Parabéns**, sua **_Interface do Usuário no estilo Chat-GPT da OpenAI_** agora está servindo IA com recursos RAG, RBAC e multimodais! Baixe os modelos DoctorAI se ainda não o fez!
 
-If you encounter any misconfiguration or errors, please file an issue or engage with our discussion. There are a lot of friendly developers here to assist you.
+Se você encontrar qualquer configuração incorreta ou erros, por favor, registre uma issue ou participe da nossa discussão. Há muitos desenvolvedores amigáveis aqui para ajudá-lo.
 
-Let's make this UI much more user friendly for everyone!
+Vamos tornar esta interface muito mais amigável para todos!
 
-Thanks for making open-webui your UI Choice for AI!
+Obrigado por escolher o DoctorAI como sua interface de usuário para IA!
 
-This doc is made by **Bob Reyes**, your **Open-WebUI** fan from the Philippines.
+Este documento foi criado por **Bob Reyes**, seu **fã do DoctorAI** das Filipinas.
+```
