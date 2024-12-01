@@ -1,36 +1,37 @@
-# Open WebUI Troubleshooting Guide
+```markdown
+# Guia de Solução de Problemas do DoctorAI
 
-## Understanding the Open WebUI Architecture
+## Entendendo a Arquitetura do DoctorAI
 
-The Open WebUI system is designed to streamline interactions between the client (your browser) and the Ollama API. At the heart of this design is a backend reverse proxy, enhancing security and resolving CORS issues.
+O sistema DoctorAI é projetado para otimizar as interações entre o cliente (seu navegador) e a API do DoctorAI. No centro deste design está um proxy reverso que melhora a segurança e resolve problemas de CORS (Cross-Origin Resource Sharing).
 
-- **How it Works**: The Open WebUI is designed to interact with the Ollama API through a specific route. When a request is made from the WebUI to Ollama, it is not directly sent to the Ollama API. Initially, the request is sent to the Open WebUI backend via `/ollama` route. From there, the backend is responsible for forwarding the request to the Ollama API. This forwarding is accomplished by using the route specified in the `OLLAMA_BASE_URL` environment variable. Therefore, a request made to `/ollama` in the WebUI is effectively the same as making a request to `OLLAMA_BASE_URL` in the backend. For instance, a request to `/ollama/api/tags` in the WebUI is equivalent to `OLLAMA_BASE_URL/api/tags` in the backend.
+- **Como Funciona**: O DoctorAI é projetado para interagir com a API do DoctorAI através de uma rota específica. Quando uma solicitação é feita da interface do usuário para o DoctorAI, ela não é enviada diretamente para a API do DoctorAI. Inicialmente, a solicitação é enviada para o backend do DoctorAI via rota `/doctorai`. A partir daí, o backend é responsável por encaminhar a solicitação para a API do DoctorAI. Este encaminhamento é realizado usando a rota especificada na variável de ambiente `DOCTORAI_BASE_URL`. Portanto, uma solicitação feita para `/doctorai` na interface do usuário é efetivamente a mesma que fazer uma solicitação para `DOCTORAI_BASE_URL` no backend. Por exemplo, uma solicitação para `/doctorai/api/tags` na interface do usuário é equivalente a `DOCTORAI_BASE_URL/api/tags` no backend.
 
-- **Security Benefits**: This design prevents direct exposure of the Ollama API to the frontend, safeguarding against potential CORS (Cross-Origin Resource Sharing) issues and unauthorized access. Requiring authentication to access the Ollama API further enhances this security layer.
+- **Benefícios de Segurança**: Este design impede a exposição direta da API do DoctorAI ao frontend, protegendo contra potenciais problemas de CORS e acesso não autorizado. Exigir autenticação para acessar a API do DoctorAI aumenta ainda mais essa camada de segurança.
 
-## Open WebUI: Server Connection Error
+## Erro de Conexão no DoctorAI
 
-If you're experiencing connection issues, it’s often due to the WebUI docker container not being able to reach the Ollama server at 127.0.0.1:11434 (host.docker.internal:11434) inside the container . Use the `--network=host` flag in your docker command to resolve this. Note that the port changes from 3000 to 8080, resulting in the link: `http://localhost:8080`.
+Se você estiver enfrentando problemas de conexão, isso geralmente ocorre porque o contêiner Docker da interface do usuário não consegue alcançar o servidor DoctorAI em `127.0.0.1:11434` (host.docker.internal:11434) dentro do contêiner. Use o sinalizador `--network=host` no seu comando Docker para resolver isso. Observe que a porta muda de `3000` para `8080`, resultando no link: `http://localhost:8080`.
 
-**Example Docker Command**:
-
+**Exemplo de Comando Docker**:
 ```bash
-docker run -d --network=host -v open-webui:/app/backend/data -e OLLAMA_BASE_URL=http://127.0.0.1:11434 --name open-webui --restart always ghcr.io/open-webui/open-webui:main
+docker run -d --network=host -v doctorai:/app/backend/data -e DOCTORAI_BASE_URL=http://127.0.0.1:11434 --name doctorai --restart always ghcr.io/teledoc-journey-medical/doctorai:main
 ```
 
-### Error on Slow Responses for Ollama
+### Erro em Respostas Lentas do DoctorAI
 
-Open WebUI has a default timeout of 5 minutes for Ollama to finish generating the response. If needed, this can be adjusted via the environment variable AIOHTTP_CLIENT_TIMEOUT, which sets the timeout in seconds.
+O DoctorAI tem um tempo limite padrão de 5 minutos para concluir a geração da resposta. Se necessário, isso pode ser ajustado através da variável de ambiente `AIOHTTP_CLIENT_TIMEOUT`, que define o tempo limite em segundos.
 
-### General Connection Errors
+### Erros Gerais de Conexão
 
-**Ensure Ollama Version is Up-to-Date**: Always start by checking that you have the latest version of Ollama. Visit [Ollama's official site](https://ollama.com/) for the latest updates.
+**Certifique-se de que a Versão do DoctorAI Está Atualizada**: Comece sempre verificando se você tem a versão mais recente do DoctorAI. Visite o [site oficial do DoctorAI](https://doctorai.com/) para as últimas atualizações.
 
-**Troubleshooting Steps**:
+**Passos de Solução de Problemas**:
 
-1. **Verify Ollama URL Format**:
-   - When running the Web UI container, ensure the `OLLAMA_BASE_URL` is correctly set. (e.g., `http://192.168.1.1:11434` for different host setups).
-   - In the Open WebUI, navigate to "Settings" > "General".
-   - Confirm that the Ollama Server URL is correctly set to `[OLLAMA URL]` (e.g., `http://localhost:11434`).
+1. **Verifique o Formato da URL do DoctorAI**:
+   - Ao executar o contêiner da interface do usuário, verifique se o `DOCTORAI_BASE_URL` está configurado corretamente (por exemplo, `http://192.168.1.1:11434` para configurações de host diferentes).
+   - Na interface do DoctorAI, navegue até "Configurações" > "Geral".
+   - Confirme que a URL do Servidor DoctorAI está corretamente configurada para `[URL DOCTORAI]` (por exemplo, `http://localhost:11434`).
 
-By following these enhanced troubleshooting steps, connection issues should be effectively resolved. For further assistance or queries, feel free to reach out to us on our community Discord.
+Seguindo estes passos aprimorados de solução de problemas, os problemas de conexão devem ser resolvidos efetivamente. Para mais assistência ou dúvidas, sinta-se à vontade para entrar em contato conosco em nossa comunidade no Discord.
+```
